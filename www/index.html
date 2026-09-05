@@ -1,14 +1,257 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ai-app-builder</title>
-    <script type="module" crossorigin src="/assets/index-n2s15sqH.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-BOZiHYUH.css">
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+```html
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Completa</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #1e1e2f, #2a2a40);
+        }
+
+        .calculator {
+            background-color: #33334d;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            width: 320px;
+        }
+
+        .display {
+            background-color: #222233;
+            color: #ffffff;
+            font-size: 2.2rem;
+            padding: 20px;
+            text-align: right;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            word-break: break-all;
+            word-wrap: break-word;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .previous-operand {
+            font-size: 1rem;
+            color: #8888aa;
+            min-height: 20px;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        button {
+            background-color: #444466;
+            color: #ffffff;
+            border: none;
+            padding: 20px;
+            font-size: 1.2rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        button:hover {
+            background-color: #555577;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .btn-operator {
+            background-color: #ff9f0a;
+            color: #ffffff;
+        }
+
+        .btn-operator:hover {
+            background-color: #ffb340;
+        }
+
+        .btn-equal {
+            background-color: #34c759;
+            grid-column: span 2;
+        }
+
+        .btn-equal:hover {
+            background-color: #40d967;
+        }
+
+        .btn-clear {
+            background-color: #ff3b30;
+        }
+
+        .btn-clear:hover {
+            background-color: #ff5247;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="calculator">
+        <div class="display">
+            <div id="previous-operand" class="previous-operand"></div>
+            <div id="current-operand" class="current-operand">0</div>
+        </div>
+        <div class="buttons">
+            <button class="btn-clear" onclick="clearDisplay()">C</button>
+            <button onclick="deleteDigit()">DEL</button>
+            <button class="btn-operator" onclick="appendOperator('%')">%</button>
+            <button class="btn-operator" onclick="appendOperator('/')">÷</button>
+
+            <button onclick="appendNumber('7')">7</button>
+            <button onclick="appendNumber('8')">8</button>
+            <button onclick="appendNumber('9')">9</button>
+            <button class="btn-operator" onclick="appendOperator('*')">×</button>
+
+            <button onclick="appendNumber('4')">4</button>
+            <button onclick="appendNumber('5')">5</button>
+            <button onclick="appendNumber('6')">6</button>
+            <button class="btn-operator" onclick="appendOperator('-')">-</button>
+
+            <button onclick="appendNumber('1')">1</button>
+            <button onclick="appendNumber('2')">2</button>
+            <button onclick="appendNumber('3')">3</button>
+            <button class="btn-operator" onclick="appendOperator('+')">+</button>
+
+            <button onclick="appendNumber('0')">0</button>
+            <button onclick="appendNumber('.')">.</button>
+            <button class="btn-equal" onclick="compute()">=</button>
+        </div>
+    </div>
+
+    <script>
+        let currentOperandElement = document.getElementById('current-operand');
+        let previousOperandElement = document.getElementById('previous-operand');
+        
+        let currentOperand = '0';
+        let previousOperand = '';
+        let operation = undefined;
+        let resetScreen = false;
+
+        function updateDisplay() {
+            currentOperandElement.innerText = currentOperand;
+            if (operation != null) {
+                previousOperandElement.innerText = `${previousOperand} ${operation}`;
+            } else {
+                previousOperandElement.innerText = '';
+            }
+        }
+
+        function appendNumber(number) {
+            if (currentOperand === '0' || resetScreen) {
+                currentOperand = number;
+                resetScreen = false;
+            } else {
+                if (number === '.' && currentOperand.includes('.')) return;
+                currentOperand += number;
+            }
+            updateDisplay();
+        }
+
+        function appendOperator(op) {
+            if (currentOperand === '') return;
+            if (previousOperand !== '') {
+                compute();
+            }
+            operation = op;
+            previousOperand = currentOperand;
+            currentOperand = '';
+            updateDisplay();
+        }
+
+        function compute() {
+            let computation;
+            const prev = parseFloat(previousOperand);
+            const current = parseFloat(currentOperand);
+            if (isNaN(prev) || isNaN(current)) return;
+
+            switch (operation) {
+                case '+':
+                    computation = prev + current;
+                    break;
+                case '-':
+                    computation = prev - current;
+                    break;
+                case '*':
+                    computation = prev * current;
+                    break;
+                case '/':
+                    if (current === 0) {
+                        alert("Erro: Divisão por zero!");
+                        clearDisplay();
+                        return;
+                    }
+                    computation = prev / current;
+                    break;
+                case '%':
+                    computation = (prev * current) / 100;
+                    break;
+                default:
+                    return;
+            }
+
+            currentOperand = computation.toString();
+            operation = undefined;
+            previousOperand = '';
+            resetScreen = true;
+            updateDisplay();
+        }
+
+        function clearDisplay() {
+            currentOperand = '0';
+            previousOperand = '';
+            operation = undefined;
+            updateDisplay();
+        }
+
+        function deleteDigit() {
+            if (resetScreen) return;
+            if (currentOperand.length === 1) {
+                currentOperand = '0';
+            } else {
+                currentOperand = currentOperand.slice(0, -1);
+            }
+            updateDisplay();
+        }
+
+        // Suporte ao teclado
+        window.addEventListener('keydown', e => {
+            if ((e.key >= 0 && e.key <= 9) || e.key === '.') {
+                appendNumber(e.key);
+            }
+            if (e.key === '+' || e.key === '-' || e.key === '*' || e.key === '/' || e.key === '%') {
+                appendOperator(e.key);
+            }
+            if (e.key === 'Enter' || e.key === '=') {
+                e.preventDefault();
+                compute();
+            }
+            if (e.key === 'Backspace') {
+                deleteDigit();
+            }
+            if (e.key === 'Escape') {
+                clearDisplay();
+            }
+        });
+    </script>
+</body>
 </html>
+```
