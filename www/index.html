@@ -3,296 +3,453 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Compras</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Lista Fácil</title>
     <style>
         :root {
             --primary: #4f46e5;
-            --primary-hover: #4338ca;
-            --bg: #f3f4f6;
-            --card-bg: #ffffff;
-            --text: #1f2937;
-            --text-muted: #9ca3af;
-            --danger: #ef4444;
-            --danger-hover: #dc2626;
+            --primary-dark: #4338ca;
             --success: #10b981;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --safe-top: env(safe-area-inset-top);
+            --safe-bottom: env(safe-area-inset-bottom);
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        body {
+        html, body {
+            width: 100%;
+            height: 100vh;
+            height: 100dvh;
             background-color: var(--bg);
             color: var(--text);
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            min-height: 100vh;
-            padding: 2rem 1rem;
+            overflow: hidden;
+            position: fixed;
         }
 
-        .container {
-            background-color: var(--card-bg);
+        .app-container {
+            display: flex;
+            flex-direction: column;
             width: 100%;
-            max-width: 500px;
-            padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            height: 100%;
+            padding-top: var(--safe-top);
+            padding-bottom: var(--safe-bottom);
+            background-color: var(--bg);
         }
 
-        h1 {
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
-            text-align: center;
-            color: var(--primary);
-        }
-
-        .form-group {
+        header {
+            background: var(--card-bg);
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
             display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1.5rem;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            z-index: 10;
+        }
+
+        .header-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stats {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            background: var(--bg);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .input-section {
+            padding: 16px 20px;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .input-wrapper {
+            position: relative;
+            flex: 1;
         }
 
         input[type="text"] {
-            flex: 1;
-            padding: 0.75rem 1rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.5rem;
+            width: 100%;
+            padding: 14px 16px;
             font-size: 1rem;
+            border: 2px solid var(--border);
+            border-radius: 12px;
             outline: none;
+            background: var(--bg);
+            color: var(--text);
             transition: border-color 0.2s;
         }
 
         input[type="text"]:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            background: var(--card-bg);
         }
 
-        button {
-            background-color: var(--primary);
+        .btn-add {
+            background: var(--primary);
             color: white;
             border: none;
-            padding: 0.75rem 1.25rem;
+            border-radius: 12px;
+            padding: 0 20px;
             font-size: 1rem;
             font-weight: 600;
-            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: background 0.2s, transform 0.1s;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+            min-width: 60px;
         }
 
-        button:hover {
-            background-color: var(--primary-hover);
+        .btn-add:active {
+            transform: scale(0.95);
+            background: var(--primary-dark);
         }
 
-        .shopping-list {
-            list-style: none;
-            max-height: 400px;
+        .main-content {
+            flex: 1;
             overflow-y: auto;
+            padding: 16px 20px;
+            -webkit-overflow-scrolling: touch;
         }
 
-        .shopping-item {
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-light);
+            text-align: center;
+            gap: 12px;
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            stroke: var(--text-light);
+            opacity: 0.5;
+        }
+
+        .list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding-bottom: 20px;
+        }
+
+        .list-item {
+            background: var(--card-bg);
+            padding: 14px 16px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0.75rem 0.5rem;
-            border-bottom: 1px solid #e5e7eb;
-            animation: fadeIn 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+            animation: slideIn 0.3s ease;
         }
 
-        .shopping-item:last-child {
-            border-bottom: none;
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .item-info {
+        .item-left {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 14px;
             flex: 1;
+            min-width: 0;
             cursor: pointer;
         }
 
-        input[type="checkbox"] {
-            width: 1.25rem;
-            height: 1.25rem;
-            cursor: pointer;
-            accent-color: var(--success);
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+
+        .list-item.completed .checkbox {
+            background: var(--success);
+            border-color: var(--success);
+        }
+
+        .checkbox svg {
+            width: 14px;
+            height: 14px;
+            stroke: white;
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.2s;
+        }
+
+        .list-item.completed .checkbox svg {
+            opacity: 1;
+            transform: scale(1);
         }
 
         .item-text {
             font-size: 1rem;
+            color: var(--text);
             word-break: break-word;
-            transition: color 0.2s, text-decoration 0.2s;
+            transition: color 0.2s;
         }
 
-        .shopping-item.completed .item-text {
+        .list-item.completed .item-text {
+            color: var(--text-light);
             text-decoration: line-through;
-            color: var(--text-muted);
         }
 
-        .delete-btn {
-            background-color: transparent;
-            color: var(--danger);
+        .btn-delete {
+            background: transparent;
             border: none;
-            padding: 0.5rem;
-            font-size: 1rem;
-            border-radius: 0.375rem;
+            color: var(--text-light);
+            padding: 8px;
             cursor: pointer;
-            transition: background-color 0.2s, color 0.2s;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s, background 0.2s;
         }
 
-        .delete-btn:hover {
-            background-color: #fee2e2;
-            color: var(--danger-hover);
+        .btn-delete:hover, .btn-delete:active {
+            color: var(--danger);
+            background: rgba(239, 68, 68, 0.1);
         }
 
-        .empty-state {
-            text-align: center;
-            color: var(--text-muted);
-            padding: 2rem 0;
-            font-style: italic;
+        .btn-delete svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .footer-actions {
+            padding: 12px 20px;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-text {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 6px;
+        }
+
+        .btn-text:active {
+            background: var(--bg);
+        }
+
+        .btn-text.danger {
+            color: var(--danger);
         }
     </style>
 </head>
 <body>
+    <div class="app-container">
+        <header>
+            <div class="header-title">
+                🛒 Lista Fácil
+            </div>
+            <div class="stats" id="statsCounter">0/0 itens</div>
+        </header>
 
-    <div class="container">
-        <h1>Lista de Compras</h1>
-        
-        <form id="item-form" class="form-group">
-            <input type="text" id="item-input" placeholder="Adicionar novo produto..." autocomplete="off" required>
-            <button type="submit">Adicionar</button>
-        </form>
+        <div class="input-section">
+            <div class="input-wrapper">
+                <input type="text" id="itemInput" placeholder="Adicionar novo produto..." autocomplete="off">
+            </div>
+            <button class="btn-add" id="addBtn">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </button>
+        </div>
 
-        <ul id="shopping-list" class="shopping-list">
-            <!-- Os itens serão inseridos aqui via JavaScript -->
-        </ul>
+        <div class="main-content" id="mainContent">
+            <div class="empty-state" id="emptyState">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                <p>Sua lista está vazia.<br>Adicione itens acima.</p>
+            </div>
+            <div class="list" id="shoppingList" style="display: none;"></div>
+        </div>
+
+        <div class="footer-actions" id="footerActions" style="display: none;">
+            <button class="btn-text danger" id="clearCompletedBtn">Limpar comprados</button>
+            <button class="btn-text" id="clearAllBtn">Limpar tudo</button>
+        </div>
     </div>
 
     <script>
-        const form = document.getElementById('item-form');
-        const input = document.getElementById('item-input');
-        const list = document.getElementById('shopping-list');
+        document.addEventListener('DOMContentLoaded', () => {
+            let items = JSON.parse(localStorage.getItem('lista_facil_items')) || [];
 
-        // Carregar itens do localStorage ao iniciar
-        document.addEventListener('DOMContentLoaded', loadItems);
+            const itemInput = document.getElementById('itemInput');
+            const addBtn = document.getElementById('addBtn');
+            const shoppingList = document.getElementById('shoppingList');
+            const emptyState = document.getElementById('emptyState');
+            const statsCounter = document.getElementById('statsCounter');
+            const footerActions = document.getElementById('footerActions');
+            const clearCompletedBtn = document.getElementById('clearCompletedBtn');
+            const clearAllBtn = document.getElementById('clearAllBtn');
 
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const itemName = input.value.trim();
-            if (itemName === '') return;
-
-            addItemToDOM(itemName, false);
-            saveItems();
-
-            input.value = '';
-            input.focus();
-        });
-
-        function addItemToDOM(text, completed) {
-            const li = document.createElement('li');
-            li.className = `shopping-item ${completed ? 'completed' : ''}`;
-
-            const itemInfo = document.createElement('div');
-            itemInfo.className = 'item-info';
-
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.checked = completed;
-            
-            checkbox.addEventListener('change', function() {
-                li.classList.toggle('completed', checkbox.checked);
-                saveItems();
-            });
-
-            const span = document.createElement('span');
-            span.className = 'item-text';
-            span.textContent = text;
-
-            itemInfo.appendChild(checkbox);
-            itemInfo.appendChild(span);
-
-            // Permitir clicar no texto também para marcar
-            itemInfo.addEventListener('click', function(e) {
-                if (e.target !== checkbox) {
-                    checkbox.checked = !checkbox.checked;
-                    li.classList.toggle('completed', checkbox.checked);
-                    saveItems();
-                }
-            });
-
-            const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'delete-btn';
-            deleteBtn.innerHTML = '🗑️';
-            deleteBtn.title = 'Excluir';
-            
-            deleteBtn.addEventListener('click', function() {
-                li.style.animation = 'fadeIn 0.3s ease reverse';
-                setTimeout(() => {
-                    li.remove();
-                    checkEmptyState();
-                    saveItems();
-                }, 200);
-            });
-
-            li.appendChild(itemInfo);
-            li.appendChild(deleteBtn);
-            list.appendChild(li);
-
-            checkEmptyState();
-        }
-
-        function checkEmptyState() {
-            const existingEmpty = document.getElementById('empty-state');
-            if (list.children.length === 0) {
-                if (!existingEmpty) {
-                    const emptyMsg = document.createElement('div');
-                    emptyMsg.id = 'empty-state';
-                    emptyMsg.className = 'empty-state';
-                    emptyMsg.textContent = 'Sua lista está vazia.';
-                    list.appendChild(emptyMsg);
-                }
-            } else {
-                if (existingEmpty) {
-                    existingEmpty.remove();
-                }
+            function saveAndRender() {
+                localStorage.setItem('lista_facil_items', JSON.stringify(items));
+                render();
             }
-        }
 
-        function saveItems() {
-            const items = [];
-            const liElements = list.querySelectorAll('.shopping-item');
-            
-            liElements.forEach(li => {
-                const text = li.querySelector('.item-text').textContent;
-                const completed = li.classList.contains('completed');
-                items.push({ text, completed });
-            });
+            function addItem() {
+                const text = itemInput.value.trim();
+                if (text === '') return;
 
-            localStorage.setItem('shopping_items', JSON.stringify(items));
-        }
+                items.unshift({
+                    id: Date.now(),
+                    text: text,
+                    completed: false
+                });
 
-        function loadItems() {
-            const savedItems = JSON.parse(localStorage.getItem('shopping_items')) || [];
-            list.innerHTML = '';
-            
-            if (savedItems.length === 0) {
-                checkEmptyState();
-            } else {
-                savedItems.forEach(item => {
-                    addItemToDOM(item.text, item.completed);
+                itemInput.value = '';
+                saveAndRender();
+                itemInput.focus();
+            }
+
+            function toggleItem(id) {
+                items = items.map(item => {
+                    if (item.id === id) {
+                        return { ...item, completed: !item.completed };
+                    }
+                    return item;
+                });
+                saveAndRender();
+            }
+
+            function deleteItem(id) {
+                items = items.filter(item => item.id !== id);
+                saveAndRender();
+            }
+
+            function render() {
+                shoppingList.innerHTML = '';
+                
+                if (items.length === 0) {
+                    emptyState.style.display = 'flex';
+                    shoppingList.style.display = 'none';
+                    footerActions.style.display = 'none';
+                    statsCounter.textContent = '0/0 itens';
+                    return;
+                }
+
+                emptyState.style.display = 'none';
+                shoppingList.style.display = 'flex';
+                footerActions.style.display = 'flex';
+
+                const completedCount = items.filter(i => i.completed).length;
+                statsCounter.textContent = `${completedCount}/${items.length} itens`;
+
+                items.forEach(item => {
+                    const li = document.createElement('div');
+                    li.className = `list-item ${item.completed ? 'completed' : ''}`;
+                    
+                    li.innerHTML = `
+                        <div class="item-left">
+                            <div class="checkbox">
+                                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            </div>
+                            <span class="item-text">${escapeHtml(item.text)}</span>
+                        </div>
+                        <button class="btn-delete" aria-label="Excluir">
+                            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                        </button>
+                    `;
+
+                    li.querySelector('.item-left').addEventListener('click', () => toggleItem(item.id));
+                    li.querySelector('.btn-delete').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        deleteItem(item.id);
+                    });
+
+                    shoppingList.appendChild(li);
                 });
             }
-        }
+
+            function escapeHtml(text) {
+                const map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                };
+                return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+            }
+
+            addBtn.addEventListener('click', addItem);
+            
+            itemInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addItem();
+                }
+            });
+
+            clearCompletedBtn.addEventListener('click', () => {
+                items = items.filter(item => !item.completed);
+                saveAndRender();
+            });
+
+            clearAllBtn.addEventListener('click', () => {
+                if (confirm('Deseja realmente apagar toda a lista?')) {
+                    items = [];
+                    saveAndRender();
+                }
+            });
+
+            render();
+        });
     </script>
 </body>
 </html>
