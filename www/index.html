@@ -14,10 +14,10 @@
             --bg: #f8fafc;
             --card-bg: #ffffff;
             --text: #1e293b;
-            --text-light: #64748b;
+            --text-secondary: #64748b;
             --border: #e2e8f0;
-            --safe-top: env(safe-area-inset-top);
-            --safe-bottom: env(safe-area-inset-bottom);
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
         }
 
         * {
@@ -30,22 +30,17 @@
 
         html, body {
             width: 100%;
-            height: 100vh;
-            height: 100dvh;
+            min-height: 100vh;
             background-color: var(--bg);
             color: var(--text);
-            overflow: hidden;
-            position: fixed;
+            overflow-x: hidden;
         }
 
-        .app-container {
+        body {
             display: flex;
             flex-direction: column;
-            width: 100%;
-            height: 100%;
             padding-top: var(--safe-top);
             padding-bottom: var(--safe-bottom);
-            background-color: var(--bg);
         }
 
         header {
@@ -55,11 +50,12 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
             z-index: 10;
         }
 
-        .header-title {
+        .app-title {
             font-size: 1.25rem;
             font-weight: 700;
             color: var(--primary);
@@ -70,37 +66,55 @@
 
         .stats {
             font-size: 0.85rem;
-            color: var(--text-light);
+            color: var(--text-secondary);
             background: var(--bg);
             padding: 6px 12px;
             border-radius: 20px;
             font-weight: 500;
         }
 
-        .input-section {
-            padding: 16px 20px;
-            background: var(--card-bg);
-            border-bottom: 1px solid var(--border);
+        main {
+            flex: 1;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 16px;
             display: flex;
-            gap: 10px;
-            z-index: 10;
+            flex-direction: column;
+            gap: 16px;
         }
 
-        .input-wrapper {
-            position: relative;
-            flex: 1;
+        .input-card {
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 8px;
+            width: 100%;
         }
 
         input[type="text"] {
-            width: 100%;
-            padding: 14px 16px;
-            font-size: 1rem;
-            border: 2px solid var(--border);
+            flex: 2;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
             border-radius: 12px;
+            font-size: 1rem;
             outline: none;
+            transition: border-color 0.2s;
             background: var(--bg);
             color: var(--text);
-            transition: border-color 0.2s;
         }
 
         input[type="text"]:focus {
@@ -108,33 +122,52 @@
             background: var(--card-bg);
         }
 
-        .btn-add {
+        input[type="number"] {
+            flex: 1;
+            max-width: 90px;
+            padding: 12px 8px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 1rem;
+            outline: none;
+            background: var(--bg);
+            color: var(--text);
+            text-align: center;
+        }
+
+        input[type="number"]:focus {
+            border-color: var(--primary);
+            background: var(--card-bg);
+        }
+
+        button.btn-primary {
             background: var(--primary);
             color: white;
             border: none;
+            padding: 12px 20px;
             border-radius: 12px;
-            padding: 0 20px;
             font-size: 1rem;
             font-weight: 600;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
+            gap: 6px;
             transition: background 0.2s, transform 0.1s;
             box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
-            min-width: 60px;
+            white-space: nowrap;
         }
 
-        .btn-add:active {
-            transform: scale(0.95);
+        button.btn-primary:active {
+            transform: scale(0.98);
             background: var(--primary-dark);
         }
 
-        .main-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px 20px;
-            -webkit-overflow-scrolling: touch;
+        .list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-bottom: 24px;
         }
 
         .empty-state {
@@ -142,8 +175,8 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100%;
-            color: var(--text-light);
+            padding: 48px 20px;
+            color: var(--text-secondary);
             text-align: center;
             gap: 12px;
         }
@@ -151,39 +184,37 @@
         .empty-state svg {
             width: 64px;
             height: 64px;
-            stroke: var(--text-light);
+            stroke: var(--text-secondary);
             opacity: 0.5;
         }
 
-        .list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            padding-bottom: 20px;
-        }
-
-        .list-item {
+        .item-card {
             background: var(--card-bg);
-            padding: 14px 16px;
+            padding: 12px 16px;
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
             border: 1px solid var(--border);
             transition: all 0.2s;
-            animation: slideIn 0.3s ease;
+            animation: fadeIn 0.3s ease-out;
         }
 
-        @keyframes slideIn {
+        @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .item-left {
+        .item-card.purchased {
+            background: rgba(16, 185, 129, 0.05);
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+
+        .item-info {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 12px;
             flex: 1;
             min-width: 0;
             cursor: pointer;
@@ -201,48 +232,49 @@
             transition: all 0.2s;
         }
 
-        .list-item.completed .checkbox {
+        .purchased .checkbox {
             background: var(--success);
             border-color: var(--success);
+            color: white;
         }
 
-        .checkbox svg {
-            width: 14px;
-            height: 14px;
-            stroke: white;
-            stroke-width: 3;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            fill: none;
-            opacity: 0;
-            transform: scale(0.5);
-            transition: all 0.2s;
+        .purchased .checkbox::after {
+            content: '✓';
+            font-size: 14px;
+            font-weight: bold;
         }
 
-        .list-item.completed .checkbox svg {
-            opacity: 1;
-            transform: scale(1);
+        .item-text-content {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
         }
 
-        .item-text {
+        .item-name {
             font-size: 1rem;
+            font-weight: 500;
             color: var(--text);
             word-break: break-word;
             transition: color 0.2s;
         }
 
-        .list-item.completed .item-text {
-            color: var(--text-light);
+        .purchased .item-name {
             text-decoration: line-through;
+            color: var(--text-secondary);
+        }
+
+        .item-qty {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
         }
 
         .btn-delete {
             background: transparent;
             border: none;
-            color: var(--text-light);
+            color: var(--text-secondary);
             padding: 8px;
-            cursor: pointer;
             border-radius: 8px;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -257,199 +289,181 @@
         .btn-delete svg {
             width: 20px;
             height: 20px;
-            stroke: currentColor;
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            fill: none;
+            fill: currentColor;
         }
 
-        .footer-actions {
-            padding: 12px 20px;
-            background: var(--card-bg);
-            border-top: 1px solid var(--border);
+        .actions-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 0 4px;
         }
 
         .btn-text {
             background: none;
             border: none;
-            color: var(--text-light);
-            font-size: 0.9rem;
-            font-weight: 500;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 600;
             cursor: pointer;
-            padding: 6px 12px;
+            padding: 4px 8px;
             border-radius: 6px;
         }
 
         .btn-text:active {
-            background: var(--bg);
-        }
-
-        .btn-text.danger {
-            color: var(--danger);
+            background: var(--border);
         }
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <header>
-            <div class="header-title">
-                🛒 Lista Fácil
-            </div>
-            <div class="stats" id="statsCounter">0/0 itens</div>
-        </header>
 
-        <div class="input-section">
-            <div class="input-wrapper">
-                <input type="text" id="itemInput" placeholder="Adicionar novo produto..." autocomplete="off">
-            </div>
-            <button class="btn-add" id="addBtn">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            </button>
+    <header>
+        <div class="app-title">
+            🛒 Lista Fácil
+        </div>
+        <div class="stats" id="statsCounter">0/0 itens</div>
+    </header>
+
+    <main>
+        <div class="input-card">
+            <form id="itemForm" onsubmit="addItem(event)">
+                <div class="input-group">
+                    <div class="input-row">
+                        <input type="text" id="itemName" placeholder="O que deseja comprar?" required autocomplete="off">
+                        <input type="number" id="itemQty" value="1" min="1" max="999" placeholder="Qtd">
+                    </div>
+                    <button type="submit" class="btn-primary">
+                        <span>Adicionar</span>
+                    </button>
+                </div>
+            </form>
         </div>
 
-        <div class="main-content" id="mainContent">
-            <div class="empty-state" id="emptyState">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
-                <p>Sua lista está vazia.<br>Adicione itens acima.</p>
-            </div>
-            <div class="list" id="shoppingList" style="display: none;"></div>
+        <div class="actions-bar" id="actionsBar" style="display: none;">
+            <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">Sua Lista</span>
+            <button class="btn-text" onclick="clearCompleted()">Limpar comprados</button>
         </div>
 
-        <div class="footer-actions" id="footerActions" style="display: none;">
-            <button class="btn-text danger" id="clearCompletedBtn">Limpar comprados</button>
-            <button class="btn-text" id="clearAllBtn">Limpar tudo</button>
+        <div class="list-container" id="listContainer">
+            <!-- Os itens serão inseridos aqui via JS -->
         </div>
-    </div>
+    </main>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            let items = JSON.parse(localStorage.getItem('lista_facil_items')) || [];
+        let items = JSON.parse(localStorage.getItem('lista_facil_items')) || [];
 
-            const itemInput = document.getElementById('itemInput');
-            const addBtn = document.getElementById('addBtn');
-            const shoppingList = document.getElementById('shoppingList');
-            const emptyState = document.getElementById('emptyState');
-            const statsCounter = document.getElementById('statsCounter');
-            const footerActions = document.getElementById('footerActions');
-            const clearCompletedBtn = document.getElementById('clearCompletedBtn');
-            const clearAllBtn = document.getElementById('clearAllBtn');
-
-            function saveAndRender() {
-                localStorage.setItem('lista_facil_items', JSON.stringify(items));
-                render();
-            }
-
-            function addItem() {
-                const text = itemInput.value.trim();
-                if (text === '') return;
-
-                items.unshift({
-                    id: Date.now(),
-                    text: text,
-                    completed: false
-                });
-
-                itemInput.value = '';
-                saveAndRender();
-                itemInput.focus();
-            }
-
-            function toggleItem(id) {
-                items = items.map(item => {
-                    if (item.id === id) {
-                        return { ...item, completed: !item.completed };
-                    }
-                    return item;
-                });
-                saveAndRender();
-            }
-
-            function deleteItem(id) {
-                items = items.filter(item => item.id !== id);
-                saveAndRender();
-            }
-
-            function render() {
-                shoppingList.innerHTML = '';
-                
-                if (items.length === 0) {
-                    emptyState.style.display = 'flex';
-                    shoppingList.style.display = 'none';
-                    footerActions.style.display = 'none';
-                    statsCounter.textContent = '0/0 itens';
-                    return;
-                }
-
-                emptyState.style.display = 'none';
-                shoppingList.style.display = 'flex';
-                footerActions.style.display = 'flex';
-
-                const completedCount = items.filter(i => i.completed).length;
-                statsCounter.textContent = `${completedCount}/${items.length} itens`;
-
-                items.forEach(item => {
-                    const li = document.createElement('div');
-                    li.className = `list-item ${item.completed ? 'completed' : ''}`;
-                    
-                    li.innerHTML = `
-                        <div class="item-left">
-                            <div class="checkbox">
-                                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                            </div>
-                            <span class="item-text">${escapeHtml(item.text)}</span>
-                        </div>
-                        <button class="btn-delete" aria-label="Excluir">
-                            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                        </button>
-                    `;
-
-                    li.querySelector('.item-left').addEventListener('click', () => toggleItem(item.id));
-                    li.querySelector('.btn-delete').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        deleteItem(item.id);
-                    });
-
-                    shoppingList.appendChild(li);
-                });
-            }
-
-            function escapeHtml(text) {
-                const map = {
-                    '&': '&amp;',
-                    '<': '&lt;',
-                    '>': '&gt;',
-                    '"': '&quot;',
-                    "'": '&#039;'
-                };
-                return text.replace(/[&<>"']/g, function(m) { return map[m]; });
-            }
-
-            addBtn.addEventListener('click', addItem);
-            
-            itemInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    addItem();
-                }
-            });
-
-            clearCompletedBtn.addEventListener('click', () => {
-                items = items.filter(item => !item.completed);
-                saveAndRender();
-            });
-
-            clearAllBtn.addEventListener('click', () => {
-                if (confirm('Deseja realmente apagar toda a lista?')) {
-                    items = [];
-                    saveAndRender();
-                }
-            });
-
+        function saveAndRender() {
+            localStorage.setItem('lista_facil_items', JSON.stringify(items));
             render();
-        });
+        }
+
+        function addItem(e) {
+            e.preventDefault();
+            const nameInput = document.getElementById('itemName');
+            const qtyInput = document.getElementById('itemQty');
+            
+            const name = nameInput.value.trim();
+            const qty = parseInt(qtyInput.value) || 1;
+
+            if (!name) return;
+
+            const newItem = {
+                id: Date.now(),
+                name: name,
+                qty: qty,
+                purchased: false
+            };
+
+            items.unshift(newItem);
+            
+            nameInput.value = '';
+            qtyInput.value = '1';
+            nameInput.focus();
+
+            saveAndRender();
+        }
+
+        function toggleItem(id) {
+            items = items.map(item => {
+                if (item.id === id) {
+                    return { ...item, purchased: !item.purchased };
+                }
+                return item;
+            });
+            saveAndRender();
+        }
+
+        function deleteItem(id) {
+            items = items.filter(item => item.id !== id);
+            saveAndRender();
+        }
+
+        function clearCompleted() {
+            items = items.filter(item => !item.purchased);
+            saveAndRender();
+        }
+
+        function render() {
+            const container = document.getElementById('listContainer');
+            const statsCounter = document.getElementById('statsCounter');
+            const actionsBar = document.getElementById('actionsBar');
+
+            const total = items.length;
+            const purchasedCount = items.filter(i => i.purchased).length;
+
+            statsCounter.innerText = `${purchasedCount}/${total} comprados`;
+
+            if (total > 0) {
+                actionsBar.style.display = 'flex';
+            } else {
+                actionsBar.style.display = 'none';
+            }
+
+            if (total === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <path d="M16 10a4 4 0 0 1-8 0"></path>
+                        </svg>
+                        <p>Sua lista está vazia.<br>Adicione produtos acima para começar.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = items.map(item => `
+                <div class="item-card ${item.purchased ? 'purchased' : ''}">
+                    <div class="item-info" onclick="toggleItem(${item.id})">
+                        <div class="checkbox"></div>
+                        <div class="item-text-content">
+                            <span class="item-name">${escapeHtml(item.name)}</span>
+                            <span class="item-qty">Quantidade: ${item.qty}</span>
+                        </div>
+                    </div>
+                    <button class="btn-delete" onclick="deleteItem(${item.id})" aria-label="Excluir">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                        </svg>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+
+        // Renderização inicial
+        render();
     </script>
 </body>
 </html>
