@@ -20,7 +20,18 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Dar permissão ao Gradle
+      - name: Configurar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Gerar arquivos do Capacitor
+        run: npx cap sync android
+
+      - name: Dar permissao ao Gradle
         run: chmod +x android/gradlew
 
       - name: Gerar APK
