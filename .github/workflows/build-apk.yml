@@ -1,10 +1,14 @@
-name: Build APK
+name: Build NovaForge Studio APK
 
 on:
   workflow_dispatch:
   push:
     branches:
       - main
+      - unificacao-novaforge-studio
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -18,28 +22,49 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: "21"
 
       - name: Configurar Node
         uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: "24"
+          cache: npm
 
-      - name: Instalar dependencias
+      - name: Instalar dependências
         run: npm ci
 
-      - name: Gerar arquivos do Capacitor
+      - name: Testar motor NovaForge
+        run: npm test
+
+      - name: Compilar interface
+        run: npm run build
+
+      - name: Sincronizar Android
         run: npx cap sync android
 
-      - name: Dar permissao ao Gradle
+      - name: Preparar Gradle
         run: chmod +x android/gradlew
 
-      - name: Gerar APK
+      - name: Gerar APK instalável
         working-directory: android
         run: ./gradlew assembleDebug
 
-      - name: Enviar APK
+      - name: Nomear pacote final
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk NovaForge-Studio-2.0.0.apk
+
+      - name: Publicar artefato
         uses: actions/upload-artifact@v4
         with:
-          name: novaforge-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: NovaForge-Studio-2.0.0-APK
+          path: NovaForge-Studio-2.0.0.apk
+          if-no-files-found: error
+
+      - name: Criar download público versionado
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: novaforge-studio-2.0.0-build-${{ github.run_number }}
+        run: >-
+          gh release create "$RELEASE_TAG"
+          NovaForge-Studio-2.0.0.apk
+          --title "NovaForge Studio 2.0.0 (build ${{ github.run_number }})"
+          --notes "APK instalável da edição unificada NovaForge Studio 2.0.0."

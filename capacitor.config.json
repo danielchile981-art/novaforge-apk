@@ -1,5 +1,8 @@
 {
-  "appId": "com.novaforge.app",
-  "appName": "NovaForgeApp",
-  "webDir": "www"
+  "appId": "com.novaforge.studio",
+  "appName": "NovaForge Studio",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  }
 }
