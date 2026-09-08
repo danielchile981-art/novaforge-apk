@@ -1,0 +1,8 @@
+torch>=2.4,<3
+diffusers>=0.35,<1
+transformers>=4.46,<6
+accelerate>=1.1,<2
+pillow>=10,<13
+safetensors>=0.4,<1
+fastapi>=0.115,<1
+uvicorn[standard]>=0.32,<1

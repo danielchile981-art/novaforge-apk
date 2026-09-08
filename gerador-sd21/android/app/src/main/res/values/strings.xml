@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Gerador SD 2.1</string>
+    <string name="app_title">Gerador SD 2.1</string>
+    <string name="app_subtitle">Stable Diffusion 2.1-base com filtro de segurança obrigatório</string>
+    <string name="server_label">Endereço do servidor Python</string>
+    <string name="server_hint">https://seu-endereco.trycloudflare.com</string>
+    <string name="test_connection">Testar conexão</string>
+    <string name="prompt_label">Descreva a imagem</string>
+    <string name="prompt_hint">Ex.: uma cabana futurista sob a aurora boreal, estilo cinematográfico</string>
+    <string name="filename_label">Nome do arquivo PNG</string>
+    <string name="filename_hint">imagem_gerada.png</string>
+    <string name="generate">Gerar imagem</string>
+    <string name="idle_status">Aguardando servidor</string>
+    <string name="result_title">Imagem gerada</string>
+    <string name="result_placeholder">A imagem aprovada pelo filtro aparecerá aqui.</string>
+    <string name="privacy_note">O aplicativo não usa API de imagem de terceiros. Ele se conecta somente ao servidor Python configurado acima.</string>
+</resources>

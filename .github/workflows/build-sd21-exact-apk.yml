@@ -1,0 +1,58 @@
+name: Gerar APK - Gerador SD 2.1 Exato
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - sd21-exact-app
+    paths:
+      - 'gerador-sd21/android/**'
+      - '.github/workflows/build-sd21-exact-apk.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build-apk:
+    name: Compilar APK Android
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Baixar o projeto
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Configurar Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Instalar plataforma Android 36
+        run: sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Configurar cache do Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Compilar o APK
+        working-directory: gerador-sd21/android
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon clean assembleDebug
+
+      - name: Preparar arquivo para download
+        run: |
+          mkdir -p entrega
+          cp gerador-sd21/android/app/build/outputs/apk/debug/app-debug.apk entrega/Gerador-SD21.apk
+          sha256sum entrega/Gerador-SD21.apk > entrega/Gerador-SD21.apk.sha256
+
+      - name: Disponibilizar APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Gerador-SD21-APK
+          path: entrega/
+          retention-days: 90
+          if-no-files-found: error
