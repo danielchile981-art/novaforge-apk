@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">NovaForge Imagens</string>
+
+    <!-- Modelos -->
+    <string name="anythingv5_description">Geração de imagens em estilo anime</string>
+    <string name="chilloutmix_description">Série ChilloutMix</string>
+    <string name="qteamix_description">Geração de anime em estilo chibi</string>
+    <string name="cuteyukimix_description">Geração de anime em estilo fofo</string>
+    <string name="absolutereality_description">Geração de imagens realistas</string>
+    <string name="sd21_description">Geração geral de imagens com Stable Diffusion 2.1</string>
+    <string name="ponyv55_description">Série Pony Diffusion</string>
+
+    <!-- Serviço -->
+    <string name="backend_notify">Serviço local do modelo em execução</string>
+    <string name="backend_notify_title">Motor do Stable Diffusion</string>
+    <string name="generating_notify">Gerando imagem…</string>
+
+    <!-- Comum -->
+    <string name="settings">Configurações</string>
+    <string name="confirm">Confirmar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="save">Salvar</string>
+    <string name="back">Voltar</string>
+    <string name="close">Fechar</string>
+    <string name="delete">Excluir</string>
+    <string name="delete_model">Excluir modelo</string>
+    <string name="delete_confirm">Excluir os modelos selecionados (%s)? Esta ação não pode ser desfeita.</string>
+    <string name="got_it">Entendi</string>
+    <string name="about_app">Informações importantes</string>
+    <string name="must_read">O NovaForge Imagens gera imagens localmente no aparelho usando CPU, GPU ou NPU Qualcomm compatível.\n\nO Stable Diffusion 2.1 usa a NPU nos aparelhos compatíveis, incluindo o Snapdragon 8 Elite do Galaxy S25 Ultra. O modelo, com cerca de 1,3 GB, deve ser baixado na primeira utilização. Depois disso, não há API paga nem limite diário.\n\nO filtro de segurança está sempre ativo nesta compilação. Se o filtro não puder ser carregado, a geração não é iniciada.\n\nProjeto derivado, para uso não comercial, do Local Dream v2.0.0: https://github.com/xororz/local-dream</string>
+    <string name="help">Ajuda</string>
+
+    <!-- Lista de modelos -->
+    <string name="available_models">Modelos disponíveis</string>
+    <string name="selected_items">%d selecionado(s)</string>
+    <string name="download_settings">Configurações de download</string>
+    <string name="download">Baixar</string>
+    <string name="download_from">Baixar de</string>
+    <string name="download_settings_hint">Baixe do Hugging Face ou de um endereço alternativo</string>
+    <string name="model_size">Tamanho total: aproximadamente %s</string>
+    <string name="downloaded">Baixado</string>
+    <string name="partially_downloaded">Download parcial</string>
+    <string name="continue_download">Continuar download</string>
+    <string name="continue_download_hint">O modelo \"%1$s\" foi baixado parcialmente. Deseja baixar os arquivos restantes?</string>
+    <string name="downloading_file">Baixando arquivo %1$d de %2$d: %3$s</string>
+    <string name="delete_success">Excluído</string>
+    <string name="delete_failed">Erro ao excluir</string>
+    <string name="cannot_download">Não foi possível baixar</string>
+    <string name="cannot_download_hint">Já existe um modelo sendo baixado. Aguarde.</string>
+    <string name="download_model">Baixar modelo</string>
+    <string name="download_model_hint">Deseja baixar %s? Não feche o aplicativo durante o download.\n\nO download para NPU é permitido em chips Qualcomm, mas aparelhos antigos podem não conseguir executar o modelo.</string>
+    <string name="download_done">Download concluído</string>
+    <string name="unsupport_npu">Seu aparelho não é compatível com este modelo de NPU. Tente um modelo para CPU.</string>
+    <string name="cpu_models">Modelos para CPU/GPU</string>
+    <string name="npu_models">Modelos para NPU</string>
+    <string name="no_cpu_models">Nenhum modelo</string>
+    <string name="no_npu_models">Nenhum modelo</string>
+    <string name="img2img_hint">Use uma imagem como base. Desative esta opção caso não precise dela ou encontre algum problema.</string>
+    <string name="download_patch">Baixar complemento de alta resolução</string>
+    <string name="download_patch_hint">Baixar o complemento de %1$dx%1$d para %2$s? Ele permitirá gerar em %1$d px.</string>
+    <string name="highres_patch">Complemento de alta resolução</string>
+
+    <!-- Recorte e pintura -->
+    <string name="crop_image">Recortar imagem</string>
+    <string name="crop_hint">Arraste para ajustar a área de recorte</string>
+    <string name="set_inpaint_area">Definir área de edição</string>
+    <string name="inpaint_hint">Pinte as áreas que deseja recriar</string>
+    <string name="brush_size">Tamanho do pincel</string>
+    <string name="undo">Desfazer</string>
+    <string name="redo">Refazer</string>
+    <string name="clear">Limpar</string>
+    <string name="brush_color">Cor do pincel</string>
+
+    <!-- Geração -->
+    <string name="prompt_settings">Prompts</string>
+    <string name="advanced_settings">Avançado</string>
+    <string name="advanced_settings_title">Configurações avançadas</string>
+    <string name="image_prompt">Descreva a imagem que deseja</string>
+    <string name="negative_prompt">Prompt negativo</string>
+    <string name="generate_image">Gerar imagem</string>
+    <string name="generating">Gerando imagem…</string>
+    <string name="generation_progress">%d%%</string>
+    <string name="no_results">Nenhum resultado ainda</string>
+    <string name="no_results_hint">Gere sua primeira imagem</string>
+    <string name="go_to_generate">Criar</string>
+    <string name="prompt_tab">Prompt</string>
+    <string name="result_tab">Resultado</string>
+    <string name="confirm_exit">Confirmar saída</string>
+    <string name="confirm_exit_hint">Há uma geração em andamento. Deseja realmente sair?</string>
+    <string name="reset">Restaurar</string>
+    <string name="reset_hint">Restaurar todos os parâmetros? Esta ação não pode ser desfeita.</string>
+    <string name="media_permission_hint">É necessário permitir acesso às imagens para usar uma foto como base</string>
+    <string name="backend_failed">Não foi possível iniciar o motor do modelo. Talvez o aparelho não seja compatível.</string>
+
+    <!-- Parâmetros -->
+    <string name="generation_params">Parâmetros de geração</string>
+    <string name="steps">Etapas: %d</string>
+    <string name="cfg_scale">Escala CFG: %.1f</string>
+    <string name="image_size">Tamanho: %1$dx%2$d</string>
+    <string name="random_seed">Semente aleatória (opcional)</string>
+    <string name="use_last_seed">Usar a última semente (%s)</string>
+    <string name="result_params">etapas: %s / CFG: %.1f / semente: %s</string>
+    <string name="result_params_2">tamanho: %s / tempo: %s / %s</string>
+    <string name="params_detail">Detalhes</string>
+    <string name="basic_params">Básico</string>
+    <string name="basic_step">Etapas: %d</string>
+    <string name="basic_size">Tamanho: %dx%d</string>
+    <string name="basic_seed">Semente: %s</string>
+    <string name="basic_runtime">Motor: %s</string>
+    <string name="basic_time">Tempo: %s</string>
+    <string name="opencl_warning">Aviso da GPU: a primeira execução em cada resolução é mais lenta porque o cache será criado. As próximas serão mais rápidas.</string>
+
+    <!-- Erros -->
+    <string name="error_device_not_supported">Seu aparelho ainda não é compatível com esta NPU. Use um modelo para CPU.</string>
+    <string name="error_download_failed">Falha no download: %s</string>
+    <string name="error_request_failed">Falha na solicitação: %s</string>
+    <string name="error_generation_failed">Falha na geração: %s</string>
+    <string name="unknown_error">erro desconhecido</string>
+
+    <!-- Informações -->
+    <string name="image_saved">Imagem salva na galeria</string>
+    <string name="loading_model">Carregando modelo…</string>
+
+    <!-- Gerenciador de arquivos -->
+    <string name="file_manager">Gerenciador de arquivos</string>
+    <string name="file_manager_desc">Gerencie os arquivos dos modelos</string>
+    <string name="delete_file">Excluir arquivo</string>
+    <string name="delete_file_confirm">Deseja excluir o arquivo \"%s\"?</string>
+    <string name="file_deleted">Arquivo excluído</string>
+    <string name="no_model_files">Nenhum arquivo de modelo encontrado</string>
+    <string name="loading_files">Carregando arquivos…</string>
+    <string name="back_to_folders">Voltar às pastas</string>
+    <string name="model_folder">Modelo: %s</string>
+    <string name="file_count">%d arquivo(s)</string>
+
+    <!-- Configurações -->
+    <string name="general_settings">Configurações gerais</string>
+    <string name="download_source">Fonte do download</string>
+    <string name="feature_settings">Configurações de recursos</string>
+    <string name="file_management">Gerenciamento de arquivos</string>
+
+    <!-- Modelo personalizado -->
+    <string name="add_custom_model">Adicionar modelo personalizado</string>
+    <string name="add_custom_npu_model">Adicionar modelo NPU personalizado</string>
+    <string name="custom_model">Modelo personalizado</string>
+    <string name="custom_npu_model">Modelo NPU personalizado</string>
+    <string name="custom_model_name">Nome do modelo</string>
+    <string name="custom_model_name_hint">Digite o nome do modelo</string>
+    <string name="select_model_file">Selecionar arquivo do modelo</string>
+    <string name="select_zip_file">Selecionar arquivo ZIP</string>
+    <string name="zip_file_selected">Arquivo ZIP selecionado</string>
+    <string name="file_selected">Arquivo selecionado</string>
+    <string name="add_model">Adicionar modelo</string>
+    <string name="custom_model_hint">Compatível apenas com arquivos safetensors baseados na arquitetura SD 1.5</string>
+    <string name="custom_npu_model_hint">Selecione um ZIP com os arquivos do modelo NPU. Disponível apenas em aparelhos Qualcomm.</string>
+    <string name="converting">Convertendo…</string>
+    <string name="model_conversion_success">Modelo convertido com sucesso</string>
+    <string name="model_conversion_failed">Falha na conversão: %s</string>
+    <string name="npu_model_added_success">Modelo NPU adicionado</string>
+    <string name="npu_model_add_failed">Falha ao adicionar modelo NPU: %s</string>
+    <string name="preparing_model">Preparando modelo…</string>
+    <string name="preparing_npu_model">Preparando modelo NPU…</string>
+    <string name="extracting_zip_file">Extraindo arquivo ZIP…</string>
+    <string name="copying_model_file">Copiando arquivo do modelo…</string>
+    <string name="copying_base_files">Copiando arquivos básicos…</string>
+    <string name="converting_model">Convertendo modelo…</string>
+    <string name="clip_skip">Camadas ignoradas do CLIP</string>
+    <string name="clip_skip_hint">Defina quantas camadas do CLIP serão ignoradas (1 ou 2)</string>
+    <string name="lora_files_optional">Arquivos LoRA (opcional)</string>
+    <string name="add_lora_file">Adicionar arquivo LoRA</string>
+    <string name="selected_lora_files">Arquivos LoRA selecionados:</string>
+    <string name="copying_lora_files">Copiando arquivos LoRA…</string>
+    <string name="lora_weight">Peso:</string>
+
+    <!-- Embeddings -->
+    <string name="embedding_management">Gerenciamento de embeddings</string>
+    <string name="embedding_manager">Gerenciador de embeddings</string>
+    <string name="no_embeddings">Nenhum arquivo de embedding encontrado</string>
+    <string name="import_embedding">Importar embedding</string>
+    <string name="delete_embedding">Excluir embedding</string>
+    <string name="delete_embedding_confirm">Deseja excluir o embedding \"%s\"?</string>
+    <string name="embedding_deleted">Embedding excluído</string>
+    <string name="embedding_imported">Embedding importado</string>
+    <string name="embedding_import_failed">Falha ao importar embedding: %s</string>
+    <string name="select_embedding_file">Selecionar arquivo de embedding</string>
+    <string name="embedding_file_hint">Selecione um arquivo de embedding no formato safetensors</string>
+    <string name="only_safetensors_supported">Apenas arquivos .safetensors são compatíveis</string>
+</resources>
+
