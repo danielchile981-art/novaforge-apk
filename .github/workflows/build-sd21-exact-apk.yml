@@ -50,6 +50,11 @@ jobs:
           cd entrega
           sha256sum Gerador-SD21.apk > Gerador-SD21.apk.sha256
 
+      - name: Validar assinatura e pacote Android
+        run: |
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs entrega/Gerador-SD21.apk
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging entrega/Gerador-SD21.apk | head -n 5
+
       - name: Disponibilizar APK
         uses: actions/upload-artifact@v4
         with:
