@@ -41,7 +41,9 @@ fi
 
 mkdir -p "$dist_dir"
 cp "$apk_path" "$dist_dir/NovaForge-Imagens-SD21.apk"
-sha256sum "$dist_dir/NovaForge-Imagens-SD21.apk" > "$dist_dir/NovaForge-Imagens-SD21.apk.sha256"
+(
+  cd "$dist_dir"
+  sha256sum NovaForge-Imagens-SD21.apk > NovaForge-Imagens-SD21.apk.sha256
+)
 
 echo "APK pronto: $dist_dir/NovaForge-Imagens-SD21.apk"
-

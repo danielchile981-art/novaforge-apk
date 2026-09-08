@@ -11,6 +11,7 @@ test -f "$workflow"
 test -f "$project_dir/reference/stable_diffusion_cli.py"
 test -f "$project_dir/overrides/values-pt-rBR/strings.xml"
 grep -q ':app:assembleFilterDebug' "$project_dir/scripts/build_apk.sh"
+grep -q 'sha256sum NovaForge-Imagens-SD21.apk' "$project_dir/scripts/build_apk.sh"
 grep -q 'FILTERED_APK_SHA256=50e86bcf' "$project_dir/upstream.properties"
 grep -q 'branches: \[stable-diffusion-apk\]' "$workflow"
 
@@ -32,4 +33,3 @@ print(f"Tradução XML válida: {len(names)} textos.")
 PY
 
 echo "Estrutura e política de filtro verificadas."
-
