@@ -95,7 +95,7 @@ export async function ensureRepo(
         name,
         private: true,
         auto_init: true,
-        description: "Aplicativo criado no NovaForge Studio",
+        description: "Aplicativo criado no NovaForge Livre",
       }),
     });
     if (created.status >= 400) return { ok: false, code: created.status, message: explain(created.status, created.text) };
@@ -172,7 +172,7 @@ export async function publishProject(
 
   const nextCommit = await gh(token, `/repos/${owner}/${repo}/git/commits`, {
     method: "POST",
-    body: JSON.stringify({ message: "NovaForge Studio: publicar aplicativo", tree: treeSha, parents: [parentSha] }),
+    body: JSON.stringify({ message: "NovaForge Livre: publicar aplicativo", tree: treeSha, parents: [parentSha] }),
   });
   if (nextCommit.status >= 400) return { ok: false, code: nextCommit.status, message: explain(nextCommit.status, nextCommit.text) };
   const commitSha = (nextCommit.json as { sha?: string } | null)?.sha;

@@ -7,7 +7,7 @@ export function LivePreview({id,name,files}:{id:string;name:string;files:Record<
   const receive=(event:MessageEvent)=>{
    if(event.source!==frame.current?.contentWindow||event.data?.type!=="nf-preview-save")return;
    const value=event.data.db;if(!value||typeof value!=="object"||Array.isArray(value))return;
-   const json=JSON.stringify(value);if(json.length>1000000)return;
+   const json=JSON.stringify(value);if(json.length>1000000){frame.current?.contentWindow?.postMessage({type:"nf-preview-error"},"*");return;}
    try{localStorage.setItem(key,json);}catch{frame.current?.contentWindow?.postMessage({type:"nf-preview-error"},"*");}
   };
   window.addEventListener("message",receive);return()=>window.removeEventListener("message",receive);
