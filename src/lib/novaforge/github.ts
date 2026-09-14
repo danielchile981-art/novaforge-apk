@@ -1,3 +1,8 @@
+import JSZip from "jszip";
+import {Capacitor} from "@capacitor/core";
+import {Delivery} from "./delivery.ts";
+import {downloadBlob} from "./zip.ts";
+
 export type GithubStatus = {
   ok: boolean;
   code?: number;
@@ -110,6 +115,17 @@ export async function publishProject(
   files: Record<string, string>,
   onProgress?: (done: number, total: number, message: string) => void,
 ): Promise<GithubStatus & { repo?: string; branch?: string; commitSha?: string }> {
+  const before=await gh(token,"/repos/"+owner+"/"+safeRepoName(requestedRepo)+"/contents/capacitor.config.json");
+  if(before.status<400){
+    try{
+      const encoded=(before.json as {content:string}).content.replace(/\s/g,"");
+      const existing=JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(encoded),c=>c.charCodeAt(0))));
+      if(existing.appId!==JSON.parse(files["capacitor.config.json"]||"{}").appId)return {ok:false,message:"Este repositório pertence a outro aplicativo. Publicação interrompida."};
+    }catch{return {ok:false,message:"Não foi possível confirmar a identidade do repositório."};}
+  }else{
+    const repoState=await gh(token,"/repos/"+owner+"/"+safeRepoName(requestedRepo));
+    if(repoState.status<400)return {ok:false,message:"O repositório já existe e não foi identificado como este app. Não vou sobrescrevê-lo."};
+  }
   const ensured = await ensureRepo(token, owner, requestedRepo);
   if (!ensured.ok || !ensured.name || !ensured.branch) return ensured;
   const repo = ensured.name;
@@ -213,28 +229,23 @@ export async function latestArtifact(
   };
 }
 
-export async function downloadArtifact(token: string, artifact: GithubArtifact, filename: string): Promise<GithubStatus> {
-  const res = await fetch(artifact.archiveDownloadUrl, {
-    headers: {
-      Accept: "application/vnd.github+json",
-      Authorization: `Bearer ${token}`,
-      "X-GitHub-Api-Version": "2022-11-28",
-    },
-  });
-  if (!res.ok) return { ok: false, code: res.status, message: explain(res.status, await res.text()) };
-  const blob = await res.blob();
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename.endsWith(".zip") ? filename : `${filename}.zip`;
-  link.rel = "noopener";
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 4000);
-  return { ok: true, message: "Download do APK iniciado." };
+export async function downloadArtifact(token:string,artifact:GithubArtifact,filename:string):Promise<GithubStatus>{
+ try{
+  let archive:ArrayBuffer|string;
+  if(Capacitor.isNativePlatform())archive=(await Delivery.githubArtifact({url:artifact.archiveDownloadUrl,token})).base64;
+  else{
+   const res=await fetch(artifact.archiveDownloadUrl,{headers:{Accept:"application/vnd.github+json",Authorization:"Bearer "+token,"X-GitHub-Api-Version":"2022-11-28"}});
+   if(!res.ok)return {ok:false,code:res.status,message:explain(res.status,await res.text())};
+   archive=await res.arrayBuffer();
+  }
+  const zip=await JSZip.loadAsync(archive,{base64:typeof archive==="string"});
+  const apk=Object.values(zip.files).find(file=>!file.dir&&file.name.endsWith(".apk"));
+  if(!apk)throw new Error("A compilação não publicou um APK.");
+  const bytes=await apk.async("arraybuffer");
+  await downloadBlob(new Blob([bytes],{type:"application/vnd.android.package-archive"}),filename.replace(/\.zip$/,"")+".apk");
+  return {ok:true,message:"APK salvo. Abra o arquivo para instalar."};
+ }catch(error){return {ok:false,message:(error instanceof Error?error.message:"Download indisponível.")+" Use também o link Ver detalhes no GitHub."};}
 }
-
 export async function putFiles(
   token: string,
   owner: string,

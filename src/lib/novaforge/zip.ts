@@ -1,4 +1,5 @@
 import JSZip from "jszip";
+import {saveNative} from "./delivery.ts";
 
 export async function zipProject(name: string, files: Record<string, string>): Promise<Blob> {
   const zip = new JSZip();
@@ -15,7 +16,8 @@ export function sanitizeFolder(name: string): string {
   return name.replace(/[^A-Za-z0-9_\-]+/g, "-").replace(/(^-|-$)/g, "") || "app";
 }
 
-export function downloadBlob(blob: Blob, filename: string): void {
+export async function downloadBlob(blob: Blob, filename: string): Promise<void> {
+  if(await saveNative(blob,filename))return;
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;

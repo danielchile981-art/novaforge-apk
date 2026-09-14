@@ -7,3 +7,12 @@ android/local.properties
 android/app/build/
 android/build/
 android/app/src/main/assets/public/
+
+demo-apps/
+playwright-report/
+test-results/
+branding/
+scripts/prepare-android.mjs
+entrega/
+*.keystore
+*.jks

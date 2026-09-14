@@ -1,4 +1,5 @@
 import { slugify } from "./id.ts";
+import { newAppId } from "./branding.ts";
 import type {
   AppSpec,
   Category,
@@ -41,13 +42,12 @@ export const CATEGORIES: { id: Category; label: string; blurb: string; sample: s
   { id: "tarefas", label: "Lista de tarefas", blurb: "Pendências e conclusão", sample: "Lista de tarefas com prazo e prioridade" },
   { id: "habitos", label: "Hábitos", blurb: "Marcar o dia e ver sequência", sample: "Hábitos diários com histórico" },
   { id: "catalogo", label: "Catálogo", blurb: "Itens, preços e busca", sample: "Catálogo de produtos com preços" },
-  { id: "agenda", label: "Agenda", blurb: "Compromissos e lembretes", sample: "Agenda de compromissos da semana" },
+  { id: "agenda", label: "Agenda", blurb: "Calendário local de compromissos", sample: "Agenda de compromissos da semana" },
   { id: "delivery", label: "Delivery", blurb: "Pedidos e status", sample: "Delivery com pedidos e status de entrega" },
   { id: "formulario", label: "Formulário", blurb: "Coletar respostas", sample: "Formulário de inscrição com lista de enviados" },
   { id: "calculadora", label: "Calculadora", blurb: "Contas na hora", sample: "Calculadora simples com histórico" },
   { id: "clientes", label: "Clientes", blurb: "Cadastro e busca", sample: "Cadastro de clientes com telefone e anotações" },
   { id: "produtividade", label: "Produtividade", blurb: "Notas e tarefas juntas", sample: "Produtividade com notas e tarefas" },
-  { id: "ferramentas", label: "Ferramentas", blurb: "Utilitário rápido", sample: "Ferramentas: conversor de medidas" },
   { id: "notas", label: "Notas", blurb: "Anotações rápidas", sample: "Bloco de notas simples" },
 ];
 
@@ -101,6 +101,9 @@ function detectLocale(prompt: string): "pt-BR" | "en" {
 
 function detectCategory(p: string): Category {
   const s = p.toLowerCase();
+  if (/(produtividade|notas e tarefas|tarefas e notas)/.test(s)) return "produtividade";
+  if (/(cat[aá]logo|card[aá]pio)/.test(s)) return "catalogo";
+  if (/(delivery|pedidos)/.test(s)) return "delivery";
   const hasSales = /(venda|vendas|sales|pdv|loja)/.test(s);
   const hasStock = /(estoque|invent[aá]rio|stock|inventory|produto)/.test(s);
   if (hasSales && hasStock) return "vendas-estoque";
@@ -126,7 +129,7 @@ function detectName(prompt: string, category: Category): string {
   const quoted = prompt.match(/[“"]([^”"]{2,40})[”"]/) ?? prompt.match(/'([^']{2,40})'/);
   if (quoted?.[1]) return quoted[1];
   const chamado = prompt.match(/(?:chamado|nomeado|named|called)\s+([A-Za-zÀ-ÿ0-9 ]{2,40})/i);
-  if (chamado?.[1]) return chamado[1].trim();
+  if (chamado?.[1]) return chamado[1].split(/\s+(?:com|para|que|e)\s+/i)[0]!.trim();
   const labels: Record<Category, string> = {
     "vendas-estoque": "Minha Loja",
     vendas: "Minhas Vendas",
@@ -182,6 +185,7 @@ function wants(prompt: string, re: RegExp): boolean {
 function baseSpec(prompt: string, category: Category, name: string): AppSpec {
   const primary = detectColor(prompt);
   return {
+    appId: newAppId(), versionCode: 1,
     name,
     slug: slugify(name),
     description: prompt.trim().slice(0, 240) || name,
@@ -211,7 +215,7 @@ function nav(id: string, title: string, type: ScreenSpec["type"], icon: string, 
 export function specFromCategory(category: Category, prompt = "", name?: string): AppSpec {
   const spec = baseSpec(prompt || category, category, name ?? detectName(prompt || category, category));
   const includeClients = wants(prompt, /cliente|customer|crm/);
-  const includeLogin = wants(prompt, /login|senha|autentic/);
+  const includeLogin = false;
   const includeSearch = wants(prompt, /busca|pesquis|search/) || true;
   const includeReport = wants(prompt, /relat[oó]rio|lucro|dashboard|m[eê]s/) || true;
 
@@ -339,6 +343,7 @@ export function specFromCategory(category: Category, prompt = "", name?: string)
           widgets: [
             { kind: "kpi", id: "in", label: "Receitas do mês", entity: "tx", op: "monthSum", field: "amount", hint: "Receita" },
             { kind: "kpi", id: "out", label: "Despesas do mês", entity: "tx", op: "monthSum", field: "amount", hint: "Despesa" },
+            { kind: "kpi", id: "balance", label: "Saldo do mês", entity: "tx", op: "balance", field: "amount" },
           ],
         },
         nav("tx", "Lançamentos", "list", "wallet", "tx"),
@@ -542,7 +547,8 @@ export function specFromCategory(category: Category, prompt = "", name?: string)
       break;
     }
     case "calculadora": {
-      spec.screens = [nav("home", "Calculadora", "calculator", "hash"), nav("settings", "Ajustes", "settings", "settings")];
+      spec.entities.push({key:"history",label:"Cálculo",plural:"Histórico",icon:"clock",fields:[field("expr","Expressão","text"),field("result","Resultado","text")]});
+      spec.screens = [nav("home","Calculadora","calculator","hash"),nav("history","Histórico","list","clock","history"),nav("settings","Ajustes","settings","settings")];
       spec.features = ["Cálculos reais", "Histórico"];
       break;
     }
@@ -648,10 +654,6 @@ export function applySpecPatch(spec: AppSpec, instruction: string): AppSpec {
     next.features.push("Clientes");
   }
 
-  if (/(login|senha)/.test(s) && !next.screens.some((sc) => sc.type === "login")) {
-    next.screens.unshift(nav("login", "Entrar", "login", "lock"));
-    next.features.push("Tela de entrada");
-  }
 
   if (/(busca|pesquis|search)/.test(s)) {
     for (const ent of next.entities) {
@@ -669,6 +671,7 @@ export function applySpecPatch(spec: AppSpec, instruction: string): AppSpec {
     }
   }
 
+  if (JSON.stringify(next) === JSON.stringify(spec)) throw new Error('Não identifiquei uma alteração compatível. Use Personalizar para editar nome, ícone, cores e campos.');
   return next;
 }
 

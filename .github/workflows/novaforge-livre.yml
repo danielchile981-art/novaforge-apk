@@ -1,0 +1,95 @@
+name: NovaForge Livre - APKs independentes
+on:
+  workflow_dispatch:
+  push:
+    branches: [novaforge-independent]
+permissions:
+  contents: write
+concurrency:
+  group: novaforge-livre-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Instalar dependências
+        run: npm ci --no-audit --no-fund
+      - name: Testes de geração e recuperação
+        run: npm test
+      - name: Preparar navegador
+        run: npx playwright install --with-deps chromium
+      - name: Testes funcionais móveis
+        run: npm run test:browser
+      - name: Preparar NovaForge Livre
+        run: npm run android:sync
+      - name: Compilar o criador
+        working-directory: android
+        run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon
+      - name: Compilar três aplicativos independentes
+        run: |
+          for app in tarefas vendas-estoque financas; do
+            (cd "demo-apps/$app" && npm install --no-audit --no-fund && npm run android:prepare && chmod +x android/gradlew && cd android && ./gradlew assembleDebug --no-daemon)
+            node scripts/add-android-smoke.ts "demo-apps/$app"
+          done
+      - name: Habilitar aceleração do emulador
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Instalação e dados offline no Android
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          target: google_apis
+          profile: pixel_6
+          disable-animations: true
+          script: |
+            (cd demo-apps/tarefas/android && ./gradlew connectedDebugAndroidTest --no-daemon)
+            (cd demo-apps/vendas-estoque/android && ./gradlew connectedDebugAndroidTest --no-daemon)
+            (cd demo-apps/financas/android && ./gradlew connectedDebugAndroidTest --no-daemon)
+      - name: Preparar entrega verificada
+        run: |
+          mkdir -p entrega
+          cp android/app/build/outputs/apk/debug/app-debug.apk entrega/NovaForge-Livre-3.0.0.apk
+          cp demo-apps/tarefas/android/app/build/outputs/apk/debug/app-debug.apk entrega/Dia-Certo.apk
+          cp demo-apps/vendas-estoque/android/app/build/outputs/apk/debug/app-debug.apk entrega/Estoque-Livre.apk
+          cp demo-apps/financas/android/app/build/outputs/apk/debug/app-debug.apk entrega/Bolso-Claro.apk
+          SIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner | sort -V | tail -1)
+          for apk in entrega/*.apk; do "$SIGNER" verify --verbose "$apk"; done
+          (cd entrega && sha256sum *.apk > SHA256SUMS.txt)
+      - name: Relatórios de teste
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: NovaForge-Livre-testes
+          path: |
+            playwright-report/
+            test-results/
+            demo-apps/*/android/app/build/reports/androidTests/
+            demo-apps/*/android/app/build/outputs/androidTest-results/
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NovaForge-Livre-APKs
+          path: entrega/
+          if-no-files-found: error
+          retention-days: 90
+      - name: Publicar os APKs após os testes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: novaforge-livre-3.0.0-build-${{ github.run_number }}
+        run: |
+          gh release create "$TAG" entrega/* --target "$GITHUB_SHA" --title "NovaForge Livre 3.0.0" --notes-file RELEASE-NOTES.md

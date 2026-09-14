@@ -77,7 +77,7 @@ export type KpiWidget = {
   id: string;
   label: string;
   entity: string;
-  op: "count" | "sum" | "monthSum" | "profit";
+  op: "count" | "sum" | "monthSum" | "profit" | "balance";
   field?: string;
   hint?: string;
 };
@@ -110,6 +110,9 @@ export type HookSpec = {
 };
 
 export type AppSpec = {
+  appId?: string;
+  versionCode?: number;
+  brandIcon?: string;
   name: string;
   slug: string;
   description: string;

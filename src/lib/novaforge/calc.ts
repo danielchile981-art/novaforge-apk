@@ -2,6 +2,8 @@
 export function evalExpr(expr: string, ctx: Record<string, number>): number {
   const trimmed = expr.trim();
   if (!trimmed || !/^[0-9A-Za-z_+\-*/().\s]+$/.test(trimmed)) return 0;
+  const identifiers=trimmed.match(/[A-Za-z_][A-Za-z0-9_]*/g)||[];
+  if(identifiers.some(key=>!Object.prototype.hasOwnProperty.call(ctx,key)) || /[A-Za-z_][A-Za-z0-9_]*\s*[.(]/.test(trimmed)) return 0;
   const keys = Object.keys(ctx);
   const values = keys.map((k) => {
     const n = ctx[k];

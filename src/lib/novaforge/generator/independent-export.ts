@@ -1,0 +1,21 @@
+import type {AppSpec} from "../types.ts";
+import {appIdFor} from "../branding.ts";
+import {nativeFiles} from "./native-kit.ts";
+export const EXPORT_WORKFLOW="name: Android APK independente\non:\n  workflow_dispatch:\n  push:\n    branches: [main, master]\npermissions:\n  contents: read\njobs:\n  apk:\n    runs-on: ubuntu-latest\n    timeout-minutes: 25\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: \"24\"\n      - uses: actions/setup-java@v4\n        with:\n          distribution: temurin\n          java-version: \"21\"\n      - uses: android-actions/setup-android@v3\n      - run: npm install --no-audit --no-fund\n      - run: npm run build\n      - run: npx cap add android\n      - run: npx cap sync android\n      - name: Chave estável opcional\n        env:\n          KEY: ${{ secrets.NF_KEYSTORE_BASE64 }}\n        run: |\n          if [ -n \"$KEY\" ]; then echo \"$KEY\" | base64 --decode > android/release.keystore; fi\n      - run: node scripts/prepare-android.mjs\n      - name: Compilar APK\n        working-directory: android\n        env:\n          NF_STORE_PASSWORD: ${{ secrets.NF_STORE_PASSWORD }}\n          NF_KEY_ALIAS: ${{ secrets.NF_KEY_ALIAS }}\n          NF_KEY_PASSWORD: ${{ secrets.NF_KEY_PASSWORD }}\n        run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon\n      - name: Entrega\n        run: |\n          mkdir -p entrega\n          cp android/app/build/outputs/apk/debug/app-debug.apk entrega/Aplicativo.apk\n          cd entrega\n          sha256sum Aplicativo.apk > Aplicativo.apk.sha256\n      - uses: actions/upload-artifact@v4\n        with:\n          name: APK-independente\n          path: entrega/\n          if-no-files-found: error\n          retention-days: 90\n";
+export function buildExportExtras(spec:AppSpec):Record<string,string>{
+ return {
+ ...nativeFiles(spec),
+ "novaforge.project.json":JSON.stringify({format:"novaforge-project",version:3,spec},null,2),
+ "package.json":JSON.stringify({name:spec.slug||"app",version:"1.0.0",private:true,type:"module",scripts:{build:"node scripts/build.mjs","android:prepare":"npm run build && npx cap add android && npx cap sync android && node scripts/prepare-android.mjs"},dependencies:{"@capacitor/android":"8.5.1","@capacitor/core":"8.5.1"},devDependencies:{"@capacitor/cli":"8.5.1"}},null,2),
+ "capacitor.config.json":JSON.stringify({appId:appIdFor(spec),appName:spec.name,webDir:"dist",android:{allowMixedContent:false},server:{androidScheme:"https"}},null,2),
+ "scripts/build.mjs":'import {cpSync,mkdirSync,existsSync} from "node:fs";\nmkdirSync("dist",{recursive:true});cpSync("www","dist",{recursive:true});if(!existsSync("dist/index.html"))throw Error("index.html ausente");\n',
+ ".github/workflows/android-apk.yml":EXPORT_WORKFLOW,
+ ".gitignore":"node_modules/\ndist/\nandroid/\n*.keystore\n*.jks\n.env\n",
+ "README.md":"# "+spec.name+"\n\nAplicativo independente criado no NovaForge Livre. Pacote: "+appIdFor(spec)+"\n\nRecursos: "+spec.features.join(", ")+
+ "\n\nNome, ícone adaptativo, capa SVG e abertura próprios. Os mesmos arquivos www são usados na prévia e no APK."+
+ "\n\n## Gerar APK\n\nEnvie os arquivos para a raiz de um repositório GitHub vazio (main/master). Actions > Android APK independente > Artifacts > APK-independente. Precisa de internet e conta para compilar, mas o app instalado funciona sem NovaForge, Termux, login ou internet. Sem API paga; cotas de Actions dependem da conta. Nenhum pagamento é ativado."+
+ "\n\nAlternativa em computador com Node 24, Java 21 e Android SDK: npm install; npm run android:prepare; cd android; ./gradlew assembleDebug. Não prometemos compatibilidade do SDK de desktop com Termux puro."+
+ "\n\n## Backup e atualizações\n\nDados locais por pacote. Em Ajustes, exporte JSON antes de desinstalar. APK de teste: sem chave própria a assinatura pode mudar entre builds e exigir reinstalação. Para atualizações estáveis configure os secrets NF_KEYSTORE_BASE64, NF_STORE_PASSWORD, NF_KEY_ALIAS e NF_KEY_PASSWORD com sua chave privada; nunca a coloque no código."+
+ "\n\n## Limites\n\nSem backend, pagamentos, notificações agendadas, IA generativa ou autenticação. Não é publicação certificada na Play Store. Código completo editável.\n"
+ };
+}

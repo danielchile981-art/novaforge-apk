@@ -43,7 +43,7 @@ function localAdapter(): Adapter {
       try {
         localStorage.setItem(k, v);
       } catch (err) {
-        console.warn("[novaforge] storage write failed", err);
+        throw new Error("Sem espaço para salvar. Exporte um backup e libere espaço antes de continuar.");
       }
     },
     remove: (k) => {
@@ -111,10 +111,15 @@ export function getProject(id: string): ProjectRecord | null {
 export function saveProject(record: ProjectRecord): void {
   const list = listProjects().filter((p) => p.id !== record.meta.id);
   list.unshift(record.meta);
-  writeJson(LS_PROJECTS, list);
-  writeJson(LS_FILES + record.meta.id, record.files);
-  writeJson(LS_LAST + record.meta.id, record.lastWorkingFiles);
-  writeJson(LS_SPEC + record.meta.id, record.spec);
+  const entries=[
+    [LS_FILES+record.meta.id,JSON.stringify(record.files)],
+    [LS_LAST+record.meta.id,JSON.stringify(record.lastWorkingFiles)],
+    [LS_SPEC+record.meta.id,JSON.stringify(record.spec)],
+    [LS_PROJECTS,JSON.stringify(list)]
+  ] as const;
+  const before=entries.map(([key])=>[key,adapter.get(key)] as const);
+  try{for(const [key,value]of entries)adapter.set(key,value);}
+  catch(error){for(const [key,value]of before){if(value===null)adapter.remove(key);else adapter.set(key,value);}throw error;}
 }
 
 export function deleteProject(id: string): void {
@@ -167,11 +172,12 @@ export function addHistory(entry: HistoryEntry): void {
 }
 
 export function getSettings(): Settings {
-  return readJson<Settings>(LS_SETTINGS, { theme: "dark", mode: "simple" });
+  const settings=readJson<Settings>(LS_SETTINGS,{theme:"dark",mode:"simple"});
+  return {...settings,githubToken:undefined};
 }
 
 export function saveSettings(settings: Settings): void {
-  writeJson(LS_SETTINGS, settings);
+  writeJson(LS_SETTINGS,{...settings,githubToken:undefined});
 }
 
 export function exportRawDump(): string {
@@ -216,6 +222,19 @@ export function importRawDump(raw: string): { projects: number; history: number 
     throw new Error("O backup não contém a lista de projetos.");
   }
 
+  const incoming=new Map(entries);
+  try{
+    const metas=JSON.parse(String(incoming.get(LS_PROJECTS)));
+    if(!Array.isArray(metas))throw new Error();
+    for(const meta of metas){
+      if(!meta||typeof meta.id!=="string"||!/^[a-zA-Z0-9_-]+$/.test(meta.id)||typeof meta.name!=="string")throw new Error();
+      const spec=JSON.parse(String(incoming.get(LS_SPEC+meta.id)));
+      const files=JSON.parse(String(incoming.get(LS_FILES+meta.id)));
+      if(!spec?.name||!Array.isArray(spec.entities)||!Array.isArray(spec.screens)||!files?.["www/index.html"])throw new Error();
+    }
+  }catch{throw new Error("Backup incompleto ou inválido. Seus projetos atuais foram preservados.");}
+  const previous=adapter.keys().filter(key=>key.startsWith("novaforge.")&&key!==LS_SETTINGS).map(key=>[key,adapter.get(key)] as const);
+  try {
   for (const key of adapter.keys().filter((key) => key.startsWith("novaforge."))) {
     if (key !== LS_SETTINGS) adapter.remove(key);
   }
@@ -224,6 +243,11 @@ export function importRawDump(raw: string): { projects: number; history: number 
     adapter.set(key, value);
   }
 
+  }catch(error){
+    for(const key of adapter.keys().filter(key=>key.startsWith("novaforge.")&&key!==LS_SETTINGS))adapter.remove(key);
+    for(const [key,value]of previous)if(value!==null)adapter.set(key,value);
+    throw error;
+  }
   const projects = listProjects().length;
   const history = listHistory().length;
   return { projects, history };

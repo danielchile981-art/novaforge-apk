@@ -40,7 +40,13 @@ import {
 import { App as CapacitorApp } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import coverImage from "./assets/novaforge-cover.webp";
+import coverImage from "./assets/novaforge-livre-cover.svg";
+import { LivePreview } from "./LivePreview";
+import { Customization } from "./Customization";
+import { importProjectZip } from "./lib/novaforge/import-project";
+import { appIdFor } from "./lib/novaforge/branding";
+import { scopeIssues } from "./lib/novaforge/capabilities";
+import { slugify } from "./lib/novaforge/id";
 import {
   createFromIdea,
   createFromTemplate,
@@ -64,13 +70,11 @@ import {
   type GithubArtifact,
   type GithubRun,
 } from "./lib/novaforge/github";
-import { compilePreviewHtml } from "./lib/novaforge/preview";
 import { CATEGORIES, interpretPrompt, specSummary } from "./lib/novaforge/spec";
 import {
   exportRawDump,
   getSettings,
   importRawDump,
-  renameProject,
   saveSettings,
 } from "./lib/novaforge/storage";
 import type {
@@ -84,7 +88,7 @@ import type {
 import { downloadBlob, zipProject } from "./lib/novaforge/zip";
 
 type View = "home" | "create" | "projects" | "history" | "settings" | "project";
-type ProjectTab = "preview" | "code" | "export" | "versions";
+type ProjectTab = "customize" | "preview" | "code" | "export" | "versions";
 type ToastTone = "ok" | "error" | "info";
 
 type ToastState = { id: number; message: string; tone: ToastTone } | null;
@@ -137,8 +141,8 @@ function formatTime(value: string): string {
   }
 }
 
-function saveText(text: string, filename: string, type = "application/json"): void {
-  downloadBlob(new Blob([text], { type }), filename);
+async function saveText(text: string, filename: string, type = "application/json"): Promise<void> {
+  await downloadBlob(new Blob([text], { type }), filename);
 }
 
 function readBuild(projectId: string): BuildState {
@@ -303,11 +307,11 @@ function BrandMark({ compact = false }: { compact?: boolean }) {
 
 function Splash() {
   return (
-    <div className="splash" aria-label="Abrindo NovaForge Studio">
+    <div className="splash" aria-label="Abrindo NovaForge Livre">
       <img src={coverImage} alt="" className="splash-art" />
       <div className="splash-copy">
         <p className="eyebrow">IDEIAS EM MOVIMENTO</p>
-        <h1>NovaForge <span>Studio</span></h1>
+        <h1>NovaForge <span>Livre</span></h1>
         <p>Forjando seu próximo aplicativo</p>
       </div>
       <div className="splash-loader"><span /></div>
@@ -320,7 +324,7 @@ function TopBar({ openSettings }: { openSettings: () => void }) {
     <header className="topbar">
       <button className="brand-button" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
         <BrandMark compact />
-        <span>NovaForge <strong>Studio</strong></span>
+        <span>NovaForge <strong>Livre</strong></span>
       </button>
       <button className="icon-button" aria-label="Abrir configurações" onClick={openSettings}>
         <Settings size={20} />
@@ -361,7 +365,7 @@ function HomePage({ projects, create, open }: { projects: ProjectMeta[]; create:
         <div className="hero-content">
           <span className="status-pill"><span /> Motor local pronto</span>
           <h1>Sua ideia vira um<br /><em>app de verdade.</em></h1>
-          <p>Descreva o que precisa. O NovaForge cria telas, funções, dados e prepara o APK.</p>
+          <p>Crie apps de tarefas, estoque, finanças e cadastros. Personalize o nome e a capa e exporte um APK independente.</p>
           <button className="primary-button large" onClick={create}>
             Criar aplicativo <ArrowRight size={19} />
           </button>
@@ -369,7 +373,7 @@ function HomePage({ projects, create, open }: { projects: ProjectMeta[]; create:
       </section>
 
       <section className="quick-grid" aria-label="Recursos principais">
-        <article><WifiOff size={19} /><strong>Sem limites</strong><span>Motor local e offline</span></article>
+        <article><WifiOff size={19} /><strong>Criação offline</strong><span>Sem cobrança por criação</span></article>
         <article><PackageCheck size={19} /><strong>APK Android</strong><span>Projeto pronto para compilar</span></article>
         <article><ShieldCheck size={19} /><strong>Backup seguro</strong><span>Restaure projetos e versões</span></article>
       </section>
@@ -398,28 +402,20 @@ function CreatePage({ onCreated, notify }: { onCreated: (id: string) => void; no
   const [stage, setStage] = useState("");
   const summary = useMemo(() => (prompt.trim().length >= 8 ? specSummary(interpretPrompt(prompt)) : ""), [prompt]);
 
+  const unsupported = useMemo(() => prompt.trim().length >= 8 ? scopeIssues(prompt, interpretPrompt(prompt)) : [], [prompt]);
+
   async function create() {
     const text = prompt.trim();
     if (text.length < 8) {
       notify("Descreva um pouco mais o aplicativo que você quer.", "error");
       return;
     }
-    setBusy(true);
-    const stages = [
-      [12, "Entendendo sua ideia"],
-      [28, "Planejando as telas"],
-      [47, "Montando os dados"],
-      [68, "Criando as funções"],
-      [86, "Testando o código"],
-      [100, "Aplicativo pronto"],
-    ] as const;
+    if (unsupported.length) { notify(unsupported.join(" "), "error"); return; }
+    setBusy(true); setProgress(0); setStage("Compilando o modelo local");
     try {
-      for (const [value, label] of stages) {
-        setProgress(value);
-        setStage(label);
-        await wait(value === 100 ? 180 : 260);
-      }
+      await wait(40);
       const result = createFromIdea(text);
+      setProgress(100); setStage("Projeto salvo");
       notify("Aplicativo criado e salvo no aparelho.", "ok");
       onCreated(result.project.meta.id);
     } catch (error) {
@@ -442,9 +438,9 @@ function CreatePage({ onCreated, notify }: { onCreated: (id: string) => void; no
   return (
     <main className="page-content create-page">
       <div className="title-block">
-        <p className="eyebrow">MOTOR INTELIGENTE LOCAL</p>
+        <p className="eyebrow">CONSTRUTOR LOCAL</p>
         <h1>O que vamos criar?</h1>
-        <p>Explique com suas palavras. Você poderá testar e mudar tudo depois.</p>
+        <p>Escolha uma função disponível. Depois personalize nome, capa, cores e campos.</p>
       </div>
       <section className="prompt-card">
         <label htmlFor="idea">Descrição do aplicativo</label>
@@ -456,8 +452,8 @@ function CreatePage({ onCreated, notify }: { onCreated: (id: string) => void; no
           maxLength={4000}
         />
         <div className="prompt-meta"><span>{prompt.length}/4000</span><span><WifiOff size={14} /> Funciona offline</span></div>
-        {summary ? <pre className="idea-summary">{summary}</pre> : null}
-        <button className="primary-button large full" disabled={busy} onClick={() => void create()}>
+        {unsupported.length ? <div className="scope-warning" role="alert">{unsupported.map((issue) => <p key={issue}>{issue}</p>)}</div> : summary ? <pre className="idea-summary">{summary}</pre> : null}
+        <button className="primary-button large full" disabled={busy || unsupported.length > 0} onClick={() => void create()}>
           {busy ? <LoaderCircle className="spin" size={19} /> : <Sparkles size={19} />}
           {busy ? stage : "Forjar aplicativo"}
         </button>
@@ -475,7 +471,7 @@ function CreatePage({ onCreated, notify }: { onCreated: (id: string) => void; no
       <section className="section-block">
         <div className="section-heading"><div><p className="eyebrow">MODELOS FUNCIONAIS</p><h2>Comece por uma categoria</h2></div></div>
         <div className="template-grid">
-          {CATEGORIES.slice(0, 12).map((category) => {
+          {CATEGORIES.map((category) => {
             const Icon = CATEGORY_ICONS[category.id] || Laptop;
             return (
               <button key={category.id} onClick={() => useTemplate(category.id, category.label)}>
@@ -515,6 +511,11 @@ function ProjectsPage({
   notify: (message: string, tone?: ToastTone) => void;
 }) {
   const [query, setQuery] = useState("");
+  const zipInput = useRef<HTMLInputElement>(null);
+  async function importZip(file: File) {
+    try { const project = await importProjectZip(file); refresh(); notify("Projeto importado como cópia independente.", "ok"); open(project.meta.id); }
+    catch(error) { notify(error instanceof Error ? error.message : "Falha ao importar ZIP.", "error"); }
+  }
   const filtered = projects.filter((item) => `${item.name} ${item.description}`.toLowerCase().includes(query.toLowerCase()));
 
   return (
@@ -523,6 +524,8 @@ function ProjectsPage({
         <div className="title-block compact"><p className="eyebrow">BIBLIOTECA</p><h1>Meus projetos</h1><p>{projects.length} aplicativo{projects.length === 1 ? "" : "s"} salvo{projects.length === 1 ? "" : "s"}</p></div>
         <button className="square-primary" aria-label="Criar projeto" onClick={create}><Plus size={22} /></button>
       </div>
+      <button className="secondary-button full" onClick={() => zipInput.current?.click()}><Upload size={17} /> Importar projeto ZIP</button>
+      <input ref={zipInput} type="file" hidden accept=".zip,application/zip" onChange={(event) => { const file=event.target.files?.[0]; if(file) void importZip(file); event.currentTarget.value=""; }} />
       {projects.length ? (
         <>
           <label className="search-box"><span className="sr-only">Buscar projetos</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar projeto" /></label>
@@ -633,14 +636,16 @@ function SettingsPage({
       }
       update({ ...settings, githubToken: token.trim(), githubUser: result.login });
       notify(`GitHub conectado como ${result.login}.`, "ok");
-    } finally {
+    } catch(error) { notify(error instanceof Error ? error.message : "Falha ao conectar GitHub.", "error"); } finally {
       setChecking(false);
     }
   }
 
-  function exportBackup() {
-    saveText(exportRawDump(), `NovaForge-Backup-${new Date().toISOString().slice(0, 10)}.json`);
-    notify("Backup baixado. Guarde esse arquivo em local seguro.", "ok");
+  async function exportBackup() {
+    try {
+      await saveText(exportRawDump(), `NovaForge-Backup-${new Date().toISOString().slice(0, 10)}.json`);
+      notify("Backup salvo. Guarde esse arquivo em local seguro.", "ok");
+    } catch(error) { notify(error instanceof Error ? error.message : "Backup não salvo.", "error"); }
   }
 
   async function importBackup(file: File) {
@@ -666,11 +671,11 @@ function SettingsPage({
       </section>
 
       <section className="settings-section">
-        <div className="setting-title"><Github size={19} /><div><strong>GitHub e APK</strong><span>Compilação gratuita pelo GitHub Actions</span></div></div>
+        <div className="setting-title"><Github size={19} /><div><strong>GitHub e APK</strong><span>Compilação pelo GitHub Actions</span></div></div>
         {settings.githubUser ? <p className="connection-ok"><CheckCircle2 size={16} /> Conectado como {settings.githubUser}</p> : null}
         <label className="field-label">Token de acesso</label>
         <input className="text-input" type="password" value={token} onChange={(event) => setToken(event.target.value)} placeholder="github_pat_... ou ghp_..." autoComplete="off" />
-        <p className="field-help">O token fica somente neste aparelho e não entra no backup.</p>
+        <p className="field-help">Criar e usar apps não exige login. O token é opcional para compilar pelo GitHub, fica apenas nesta sessão e não entra no backup. A compilação usa a cota da sua conta; o NovaForge não habilita serviços pagos.</p>
         <button className="secondary-button full" disabled={checking} onClick={() => void verifyGithub()}>
           {checking ? <LoaderCircle className="spin" size={17} /> : <Github size={17} />} Testar conexão
         </button>
@@ -687,7 +692,7 @@ function SettingsPage({
 
       <section className="about-card">
         <BrandMark />
-        <div><strong>NovaForge Studio</strong><span>Versão 2.0 · Edição Unificada</span></div>
+        <div><strong>NovaForge Livre</strong><span>Versão 3.0 · Apps independentes</span></div>
         <p>Motor local sem cobrança por criação. Projetos salvos no aparelho, versões restauráveis e exportação completa.</p>
       </section>
     </main>
@@ -719,6 +724,7 @@ function ProjectPage({
   const [nameDraft, setNameDraft] = useState("");
   const [build, setBuild] = useState<BuildState>(() => readBuild(id));
   const monitorRef = useRef(0);
+  useEffect(() => () => { monitorRef.current += 1; }, [id]);
 
   useEffect(() => {
     if (!project) return;
@@ -768,9 +774,8 @@ function ProjectPage({
   function saveName() {
     const next = nameDraft.trim();
     if (!next || next === activeProject.meta.name) return;
-    renameProject(id, next);
-    reload();
-    notify("Nome atualizado.", "ok");
+    try { modifyProject(id, "Atualizar nome", { ...activeProject.spec, appId: appIdFor(activeProject.spec), name: next.slice(0,32), slug: slugify(next) }); reload(); notify("Nome, capa e APK atualizados.", "ok"); }
+    catch(error) { notify(error instanceof Error ? error.message : "Nome não salvo.", "error"); }
   }
 
   function pickFile(file: string) {
@@ -779,9 +784,9 @@ function ProjectPage({
   }
 
   async function exportZip() {
-    const blob = await zipProject(activeProject.meta.name, activeProject.files);
-    downloadBlob(blob, `${activeProject.spec.slug || "aplicativo"}.zip`);
-    notify("Projeto ZIP baixado.", "ok");
+    try { const blob = await zipProject(activeProject.meta.name, activeProject.files);
+    await downloadBlob(blob, `${activeProject.spec.slug || "aplicativo"}.zip`);
+    notify("Projeto ZIP salvo.", "ok"); } catch(error) { notify(error instanceof Error ? error.message : "ZIP não salvo.", "error"); }
   }
 
   async function startBuild() {
@@ -799,13 +804,13 @@ function ProjectPage({
         user = me.login;
         updateSettings({ ...settings, githubUser: user });
       }
-      const published = await publishProject(token, user, activeProject.spec.slug || "novaforge-app", activeProject.files, (_done, _total, message) => {
+      const published = await publishProject(token, user, "nf-" + appIdFor(activeProject.spec).split(".").pop(), activeProject.files, (_done, _total, message) => {
         setBuild((state) => ({ ...state, phase: "publishing", message }));
       });
       if (!published.ok || !published.repo || !published.commitSha) throw new Error(published.message);
       const next: BuildState = { phase: "waiting", message: "APK na fila de compilação…", repo: published.repo, commitSha: published.commitSha };
       setBuild(next);
-      void monitorBuild(token, user, published.repo, published.commitSha);
+      void monitorBuild(token, user, published.repo, published.commitSha).catch((error) => setBuild((state) => ({...state, phase:"error",message:String(error)})));
     } catch (error) {
       setBuild({ phase: "error", message: error instanceof Error ? error.message : "Falha ao preparar o APK." });
     }
@@ -853,7 +858,7 @@ function ProjectPage({
       return;
     }
     setBuild((state) => ({ ...state, phase: "waiting", message: "Verificando a compilação…" }));
-    void monitorBuild(token, user, repo, build.commitSha);
+    void monitorBuild(token, user, repo, build.commitSha).catch((error) => setBuild((state) => ({...state, phase:"error",message:String(error)})));
   }
 
   async function getApk() {
@@ -876,6 +881,7 @@ function ProjectPage({
 
       <nav className="project-tabs" aria-label="Ferramentas do projeto">
         <button className={tab === "preview" ? "active" : ""} onClick={() => setTab("preview")}><Eye size={17} /> Prévia</button>
+        <button className={tab === "customize" ? "active" : ""} onClick={() => setTab("customize")}><Palette size={17} /> Personalizar</button>
         <button className={tab === "code" ? "active" : ""} onClick={() => { setTab("code"); pickFile(currentFile); }}><Code2 size={17} /> Código</button>
         <button className={tab === "export" ? "active" : ""} onClick={() => setTab("export")}><PackageCheck size={17} /> APK</button>
         <button className={tab === "versions" ? "active" : ""} onClick={() => setTab("versions")}><History size={17} /> Versões</button>
@@ -885,7 +891,7 @@ function ProjectPage({
         <section className="preview-tab">
           <div className="phone-preview">
             <div className="phone-bar"><span /><span>{project.meta.name}</span><span /></div>
-            <iframe title={`Prévia de ${project.meta.name}`} sandbox="allow-scripts allow-forms allow-modals" srcDoc={compilePreviewHtml(files, `preview_${id}_`)} />
+            <LivePreview id={id} name={project.meta.name} files={files} />
           </div>
           {project.meta.status === "error" ? (
             <div className="error-card"><AlertTriangle size={18} /><div><strong>Esta versão contém um erro</strong><p>{project.meta.lastError}</p><button onClick={() => { restoreWorking(id); reload(); notify("Última versão funcional restaurada.", "ok"); }}><RotateCcw size={16} /> Restaurar</button></div></div>
@@ -898,6 +904,8 @@ function ProjectPage({
         </section>
       ) : null}
 
+      {tab === "customize" ? <Customization key={project.meta.updatedAt} spec={project.spec} save={(next) => { try { modifyProject(id, "Personalização visual e campos", next); setNameDraft(next.name); reload(); notify("Personalização aplicada.", "ok"); } catch(error) { notify(error instanceof Error ? error.message : "Falha ao salvar.", "error"); } }} /> : null}
+
       {tab === "code" ? (
         <section className="code-tab">
           <div className="file-strip">{names.map((file) => <button key={file} className={currentFile === file ? "active" : ""} onClick={() => pickFile(file)}>{file.replace("www/", "")}</button>)}</div>
@@ -909,13 +917,13 @@ function ProjectPage({
 
       {tab === "export" ? (
         <section className="export-tab">
-          <div className="export-hero"><span className="export-icon"><PackageCheck size={30} /></span><div><p className="eyebrow">ANDROID</p><h2>Seu aplicativo pronto para sair da forja</h2><p>Baixe o código agora ou gere o APK pelo GitHub Actions.</p></div></div>
+          <div className="export-hero"><span className="export-icon"><PackageCheck size={30} /></span><div><p className="eyebrow">ANDROID</p><h2>Seu aplicativo pronto para sair da forja</h2><p>Seu app terá nome, capa, ícone e dados próprios. Depois de instalado, funciona sem NovaForge, Termux ou internet.</p></div></div>
           <article className="export-card">
             <div><FileArchive size={20} /><span><strong>Projeto completo</strong><small>Código, Capacitor e automação Android</small></span></div>
             <button className="secondary-button full" onClick={() => void exportZip()}><Download size={17} /> Baixar ZIP</button>
           </article>
           <article className="export-card featured">
-            <div><Github size={20} /><span><strong>Gerar APK automaticamente</strong><small>Uma publicação e apenas uma compilação</small></span></div>
+            <div><Github size={20} /><span><strong>Gerar APK automaticamente</strong><small>Compilar usando a sua conta GitHub</small></span></div>
             {build.phase !== "idle" ? <BuildStatus state={build} /> : null}
             {build.phase === "success" && build.artifact ? (
               <button className="primary-button full" onClick={() => void getApk()}><Download size={18} /> Baixar APK</button>
@@ -927,7 +935,7 @@ function ProjectPage({
             {build.phase !== "idle" && build.phase !== "publishing" ? <button className="text-button full" onClick={() => void resumeBuild()}><RefreshCw size={16} /> Verificar novamente</button> : null}
             {build.run?.htmlUrl ? <a className="text-link" href={build.run.htmlUrl} target="_blank" rel="noreferrer"><Github size={15} /> Ver detalhes no GitHub</a> : null}
           </article>
-          <div className="privacy-note"><ShieldCheck size={18} /><p><strong>Seus dados permanecem seus.</strong> O projeto funciona offline. O token do GitHub fica somente neste aparelho.</p></div>
+          <div className="privacy-note"><ShieldCheck size={18} /><p><strong>Seus dados permanecem seus.</strong> O app exportado funciona offline. Faça backup dos dados antes de desinstalar. Os APKs usam assinatura de teste; para atualizações contínuas, configure uma chave fixa conforme o README do ZIP.</p></div>
         </section>
       ) : null}
 

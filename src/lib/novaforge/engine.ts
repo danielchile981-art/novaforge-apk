@@ -14,6 +14,8 @@ import {
 import { projectThumbnail } from "./thumbnail.ts";
 import type { AppSpec, Category, GenerateResult, HistoryEntry, ProjectMeta, ProjectRecord, VersionSnap } from "./types.ts";
 import { uid } from "./id.ts";
+import {newAppId} from "./branding.ts";
+import {scopeIssues} from "./capabilities.ts";
 import { isProjectRunnable, validateProject } from "./generator/validate.ts";
 
 function now(): string {
@@ -81,7 +83,7 @@ export function createFromIdea(prompt: string): GenerateResult & { project: Proj
     hist({ kind: "error", title: "Geração falhou", detail: result.issues.map((i) => i.message).join("; ") });
     throw new Error(result.issues.find((i) => i.level === "error")?.message || "Falha ao gerar");
   }
-  const project = persistGenerated(result.spec, result.files, "ai");
+  const project = persistGenerated(result.spec, result.files, "template");
   hist({
     kind: "generate",
     projectId: project.meta.id,
@@ -106,7 +108,9 @@ export function createBlank(name = "Novo aplicativo"): ProjectRecord {
 export function modifyProject(id: string, instruction: string, nextSpec?: AppSpec): ProjectRecord {
   const rec = getProject(id);
   if (!rec) throw new Error("Projeto não encontrado");
+  if(!nextSpec){const missing=scopeIssues(instruction,rec.spec);if(missing.length)throw new Error(missing.join(' '));}
   const spec = nextSpec ?? applySpecPatch(rec.spec, instruction);
+  spec.versionCode=(rec.spec.versionCode||1)+1;
   const files = generateFiles(spec);
   const issues = validateProject(spec, files);
   if (!isProjectRunnable(issues)) {
@@ -178,6 +182,7 @@ export function duplicateProject(id: string): ProjectRecord {
   const rec = getProject(id);
   if (!rec) throw new Error("Projeto não encontrado");
   const copySpec = { ...rec.spec, name: `${rec.spec.name} (cópia)`, slug: `${rec.spec.slug}-copia` };
+  copySpec.appId=newAppId();copySpec.versionCode=1;
   const files = generateFiles(copySpec);
   const project = persistGenerated(copySpec, files, rec.meta.source);
   hist({ kind: "duplicate", projectId: project.meta.id, title: `Duplicado: ${project.meta.name}` });

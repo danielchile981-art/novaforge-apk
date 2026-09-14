@@ -1,16 +1,18 @@
 {
-  "name": "novaforge-studio",
-  "version": "2.0.0",
+  "name": "novaforge-livre",
+  "version": "3.0.0",
   "description": "Construtor local de aplicativos Android com projetos, versões, backup e geração de APK.",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port 8080",
-    "build": "tsc --noEmit && vite build",
-    "android:sync": "npm run build && npx cap sync android",
+    "build": "node scripts/prepare-creator.ts --assets-only && tsc --noEmit && vite build",
+    "android:sync": "npm run build && npx cap sync android && node scripts/prepare-creator.ts",
     "android:apk": "npm run android:sync && cd android && ./gradlew assembleDebug",
     "preview": "vite preview --host 0.0.0.0 --port 8080",
-    "test": "node --experimental-strip-types --test src/lib/novaforge/novaforge.test.ts"
+    "test": "node --experimental-strip-types --test src/lib/novaforge/novaforge.test.ts",
+    "samples": "node scripts/generate-samples.ts",
+    "test:browser": "playwright test"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.1",
@@ -29,6 +31,7 @@
     "@types/react-dom": "^19.2.2",
     "@vitejs/plugin-react": "^5.0.4",
     "typescript": "^5.9.2",
-    "vite": "^7.1.7"
+    "vite": "^7.1.7",
+    "@playwright/test": "1.51.1"
   }
 }

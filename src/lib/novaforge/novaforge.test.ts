@@ -132,3 +132,46 @@ describe("export", () => {
     assert.ok(buf.length > 1000);
   });
 });
+
+describe("independent identity and recovery",()=>{
+ it("keeps identity on rename and separates copies with the same name",()=>{
+  const original=createFromTemplate("tarefas","Meu Dia"),second=createFromTemplate("tarefas","Meu Dia");
+  assert.notEqual(original.spec.appId,second.spec.appId);
+  const renamed=modifyProject(original.meta.id,"nome para Dia Certo");
+  assert.equal(renamed.spec.appId,original.spec.appId);assert.equal(renamed.spec.versionCode,2);
+  assert.equal(JSON.parse(renamed.files["capacitor.config.json"]).appId,original.spec.appId);
+  assert.ok(renamed.files["www/assets/cover.svg"].includes("Dia Certo"));
+ });
+ it("rejects unsupported generation without saving a fake app",()=>{
+  assert.throws(()=>createFromIdea("Crie um gerador de imagens por IA"));
+  assert.throws(()=>createFromIdea("Crie um aplicativo para pagamento com cartão"));
+  assert.equal(listProjects().length,0);
+ });
+ it("escapes script and XML text and produces valid JavaScript",()=>{
+  const spec=specFromCategory("notas","","Teste </script> & 'nome'");
+  const result=generateFromSpec(spec);assert.equal(result.ok,true);
+  assert.ok(!result.files["www/js/config.js"].includes("</script>"));
+  assert.ok(result.files["www/assets/cover.svg"].includes("&lt;/script&gt;"));
+  new Function(result.files["www/js/runtime.js"]);
+  new Function(result.files["scripts/prepare-android.mjs"].replace(/^import .*;\n/gm,""));
+ });
+ it("imports a ZIP as a new independent project",async()=>{
+  const {importProjectZip}=await import("./import-project.ts");
+  const original=createFromTemplate("financas","Bolso Claro");
+  const imported=await importProjectZip(await zipProject(original.meta.name,original.files));
+  assert.notEqual(imported.spec.appId,original.spec.appId);
+  assert.equal(imported.spec.name,original.spec.name);assert.equal(listProjects().length,2);
+ });
+ it("rejects malformed backup before clearing existing projects",async()=>{
+  const {importRawDump,exportRawDump}=await import("./storage.ts");
+  createFromTemplate("tarefas","Preservado");const before=exportRawDump();
+  assert.throws(()=>importRawDump(JSON.stringify({format:"novaforge-backup",data:{"novaforge.projects":"[{}]"}})));
+  assert.equal(listProjects()[0].name,"Preservado");
+  assert.deepEqual(JSON.parse(exportRawDump()).data,JSON.parse(before).data);
+ });
+ it("never persists a GitHub token or includes it in backup",async()=>{
+  const {saveSettings,getSettings,exportRawDump}=await import("./storage.ts");
+  saveSettings({theme:"dark",mode:"simple",githubToken:"private-test-token",githubUser:"tester"});
+  assert.equal(getSettings().githubToken,undefined);assert.ok(!exportRawDump().includes("private-test-token"));
+ });
+});

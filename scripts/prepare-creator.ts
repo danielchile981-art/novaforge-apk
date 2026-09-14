@@ -1,0 +1,14 @@
+import {mkdirSync,writeFileSync} from "node:fs";
+import {dirname} from "node:path";
+import {execFileSync} from "node:child_process";
+import {specFromCategory} from "../src/lib/novaforge/spec.ts";
+import {brandSvg} from "../src/lib/novaforge/branding.ts";
+import {nativeFiles} from "../src/lib/novaforge/generator/native-kit.ts";
+const spec=specFromCategory("generico","Criador local","NovaForge Livre");
+spec.appId="com.novaforge.livre";spec.brandIcon="spark";spec.theme.primary="#6d28d9";
+const write=(path:string,data:string)=>{mkdirSync(dirname(path),{recursive:true});writeFileSync(path,data);};
+write("src/assets/novaforge-livre-cover.svg",brandSvg(spec,true));write("public/icon-livre.svg",brandSvg(spec));
+if(process.argv.includes("--assets-only"))process.exit(0);
+for(const [path,content] of Object.entries(nativeFiles(spec)))write(path,content);
+write("branding/android.json",JSON.stringify({creator:true,color:spec.theme.primary,versionCode:30000,versionName:"3.0.0"}));
+execFileSync("node",["scripts/prepare-android.mjs"],{stdio:"inherit"});
