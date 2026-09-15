@@ -56,10 +56,10 @@ jobs:
           profile: pixel_6
           disable-animations: true
           script: |
+            (cd android && ./gradlew :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.novaforge.livre.CreatorTest --no-daemon)
             (cd demo-apps/tarefas/android && ./gradlew :app:connectedDebugAndroidTest --no-daemon)
             (cd demo-apps/vendas-estoque/android && ./gradlew :app:connectedDebugAndroidTest --no-daemon)
             (cd demo-apps/financas/android && ./gradlew :app:connectedDebugAndroidTest --no-daemon)
-            (cd android && ./gradlew :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.novaforge.livre.CreatorTest --no-daemon)
       - name: Preparar entrega verificada
         run: |
           mkdir -p entrega
