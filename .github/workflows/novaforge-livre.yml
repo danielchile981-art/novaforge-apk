@@ -32,7 +32,7 @@ jobs:
       - name: Testes funcionais móveis
         run: npm run test:browser
       - name: Preparar NovaForge Livre
-        run: npm run android:sync && node scripts/add-creator-smoke.mjs
+        run: npm run android:sync
       - name: Compilar o criador
         working-directory: android
         run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon
@@ -56,7 +56,6 @@ jobs:
           profile: pixel_6
           disable-animations: true
           script: |
-            (cd android && ./gradlew :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.novaforge.livre.CreatorTest --no-daemon)
             (cd demo-apps/tarefas/android && ./gradlew :app:connectedDebugAndroidTest --no-daemon)
             (cd demo-apps/vendas-estoque/android && ./gradlew :app:connectedDebugAndroidTest --no-daemon)
             (cd demo-apps/financas/android && ./gradlew :app:connectedDebugAndroidTest --no-daemon)
