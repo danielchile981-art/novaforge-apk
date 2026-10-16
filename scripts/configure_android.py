@@ -22,6 +22,15 @@ vector = '''<?xml version="1.0" encoding="utf-8"?>
 '''
 (res/'drawable').mkdir(exist_ok=True)
 (res/'drawable/ic_launcher_foreground.xml').write_text(vector)
+for name in ['ic_launcher', 'ic_launcher_round']:
+    adaptive = res/f'mipmap-anydpi-v26/{name}.xml'
+    adaptive.parent.mkdir(exist_ok=True)
+    adaptive.write_text('''<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/splash_background"/>
+    <foreground android:drawable="@drawable/ic_launcher_foreground"/>
+</adaptive-icon>
+''')
 (res/'drawable/splash.xml').write_text('''<?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:drawable="@color/splash_background"/>
