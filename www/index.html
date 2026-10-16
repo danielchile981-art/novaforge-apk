@@ -103,7 +103,7 @@ function resume(){unlockAudio();mode='playing';overlay.hidden=true;touch.hidden=
 function crouching(){return y>=FLOOR-.1&&(duckHeld||time<duckUntil);}
 function jump(){
   unlockAudio();if(mode!=='playing')return;
-  const onGround=y>=FLOOR-.1;
+  const onGround=y>=FLOOR-.1&&vy>=0;
   if(onGround||(time<doubleUntil&&jumps<2)){
     duckUntil=0;duckHeld=false;vy=-690;jumps=onGround?1:jumps+1;beep(jumps===2?660:440,.11);
     burst(PLAYER_X+16,y-8,'#baff53',7);
