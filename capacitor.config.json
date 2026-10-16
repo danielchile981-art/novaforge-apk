@@ -1,5 +1,10 @@
 {
-  "appId": "com.novaforge.app",
-  "appName": "NovaForgeApp",
-  "webDir": "www"
+  "appId": "com.fugadolegday.app",
+  "appName": "Fuga do Leg Day",
+  "webDir": "www",
+  "backgroundColor": "#101322",
+  "android": {
+    "backgroundColor": "#101322",
+    "allowMixedContent": false
+  }
 }

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">aplicativo</string>
-    <string name="title_activity_main">aplicativo</string>
-    <string name="package_name">com.novaforge.app</string>
-    <string name="custom_url_scheme">com.novaforge.app</string>
+    <string name="app_name">Fuga do Leg Day</string>
+    <string name="title_activity_main">Fuga do Leg Day</string>
+    <string name="package_name">com.fugadolegday.app</string>
+    <string name="custom_url_scheme">com.fugadolegday.app</string>
 </resources>

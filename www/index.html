@@ -1,470 +1,285 @@
-```html
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Lista Fácil</title>
-    <style>
-        :root {
-            --primary: #4f46e5;
-            --primary-dark: #4338ca;
-            --success: #10b981;
-            --danger: #ef4444;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text: #1e293b;
-            --text-secondary: #64748b;
-            --border: #e2e8f0;
-            --safe-top: env(safe-area-inset-top, 0px);
-            --safe-bottom: env(safe-area-inset-bottom, 0px);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        html, body {
-            width: 100%;
-            min-height: 100vh;
-            background-color: var(--bg);
-            color: var(--text);
-            overflow-x: hidden;
-        }
-
-        body {
-            display: flex;
-            flex-direction: column;
-            padding-top: var(--safe-top);
-            padding-bottom: var(--safe-bottom);
-        }
-
-        header {
-            background: var(--card-bg);
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        .app-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .stats {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            background: var(--bg);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-weight: 500;
-        }
-
-        main {
-            flex: 1;
-            width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .input-card {
-            background: var(--card-bg);
-            padding: 16px;
-            border-radius: 16px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .input-group {
-            display: flex;
-            gap: 8px;
-        }
-
-        .input-row {
-            display: flex;
-            gap: 8px;
-            width: 100%;
-        }
-
-        input[type="text"] {
-            flex: 2;
-            padding: 12px 16px;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            font-size: 1rem;
-            outline: none;
-            transition: border-color 0.2s;
-            background: var(--bg);
-            color: var(--text);
-        }
-
-        input[type="text"]:focus {
-            border-color: var(--primary);
-            background: var(--card-bg);
-        }
-
-        input[type="number"] {
-            flex: 1;
-            max-width: 90px;
-            padding: 12px 8px;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            font-size: 1rem;
-            outline: none;
-            background: var(--bg);
-            color: var(--text);
-            text-align: center;
-        }
-
-        input[type="number"]:focus {
-            border-color: var(--primary);
-            background: var(--card-bg);
-        }
-
-        button.btn-primary {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            transition: background 0.2s, transform 0.1s;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
-            white-space: nowrap;
-        }
-
-        button.btn-primary:active {
-            transform: scale(0.98);
-            background: var(--primary-dark);
-        }
-
-        .list-container {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            padding-bottom: 24px;
-        }
-
-        .empty-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 48px 20px;
-            color: var(--text-secondary);
-            text-align: center;
-            gap: 12px;
-        }
-
-        .empty-state svg {
-            width: 64px;
-            height: 64px;
-            stroke: var(--text-secondary);
-            opacity: 0.5;
-        }
-
-        .item-card {
-            background: var(--card-bg);
-            padding: 12px 16px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-            border: 1px solid var(--border);
-            transition: all 0.2s;
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .item-card.purchased {
-            background: rgba(16, 185, 129, 0.05);
-            border-color: rgba(16, 185, 129, 0.2);
-        }
-
-        .item-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex: 1;
-            min-width: 0;
-            cursor: pointer;
-        }
-
-        .checkbox {
-            width: 24px;
-            height: 24px;
-            border: 2px solid var(--border);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            transition: all 0.2s;
-        }
-
-        .purchased .checkbox {
-            background: var(--success);
-            border-color: var(--success);
-            color: white;
-        }
-
-        .purchased .checkbox::after {
-            content: '✓';
-            font-size: 14px;
-            font-weight: bold;
-        }
-
-        .item-text-content {
-            display: flex;
-            flex-direction: column;
-            min-width: 0;
-        }
-
-        .item-name {
-            font-size: 1rem;
-            font-weight: 500;
-            color: var(--text);
-            word-break: break-word;
-            transition: color 0.2s;
-        }
-
-        .purchased .item-name {
-            text-decoration: line-through;
-            color: var(--text-secondary);
-        }
-
-        .item-qty {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-        }
-
-        .btn-delete {
-            background: transparent;
-            border: none;
-            color: var(--text-secondary);
-            padding: 8px;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: color 0.2s, background 0.2s;
-        }
-
-        .btn-delete:hover, .btn-delete:active {
-            color: var(--danger);
-            background: rgba(239, 68, 68, 0.1);
-        }
-
-        .btn-delete svg {
-            width: 20px;
-            height: 20px;
-            fill: currentColor;
-        }
-
-        .actions-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 4px;
-        }
-
-        .btn-text {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            padding: 4px 8px;
-            border-radius: 6px;
-        }
-
-        .btn-text:active {
-            background: var(--border);
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#101322">
+<title>Fuga do Leg Day</title>
+<style>
+/* Tudo é local: fontes do sistema, desenho vetorial e áudio sintetizado. */
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#101322;color:#f5f0e8;font-family:system-ui,Arial,sans-serif;overscroll-behavior:none;user-select:none;-webkit-user-select:none}
+body{display:grid;place-items:center;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+#stage{position:relative;width:min(100vw,177.7778vh);aspect-ratio:16/9;max-height:100%;overflow:hidden;background:#171b2f;touch-action:none}
+canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-action:none}
+#tools{position:absolute;right:2%;top:3%;display:flex;gap:8px;z-index:4}
+button{font:800 14px system-ui;border:1px solid #ffffff30;color:#fff;background:#252b45;border-radius:12px;cursor:pointer;touch-action:none;min-width:44px;min-height:44px}
+button:focus-visible{outline:3px solid #bcff53;outline-offset:2px}
+#tools button{padding:8px 12px}
+#overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#10132288;z-index:3;text-align:center;padding:20px}
+.panel{max-width:610px;width:90%;padding:clamp(12px,3vw,32px);border:1px solid #baff533b;border-radius:24px;background:#13182df2;box-shadow:0 20px 80px #0006}
+.eyebrow{font-size:clamp(10px,1.5vw,14px);letter-spacing:.18em;color:#baff53;font-weight:900;text-transform:uppercase}
+h1{font-size:clamp(25px,5vw,54px);line-height:1.03;margin:12px 0;color:#fff;font-weight:950;letter-spacing:-.04em}
+h1 span{color:#baff53}
+p{font-size:clamp(11px,1.7vw,17px);line-height:1.5;margin:9px 0;color:#b8bfd8}
+.start{background:#baff53;color:#142004;border:0;font-size:clamp(13px,2vw,19px);padding:12px 28px;margin:12px 0 3px;box-shadow:0 5px 0 #6f9e24}
+.chips{display:flex;gap:8px;justify-content:center;margin:13px 0;flex-wrap:wrap}
+.chips span{border:1px solid #ffffff1a;border-radius:8px;padding:6px 10px;font-size:clamp(10px,1.3vw,13px);color:#e8eaf5}
+.pulse{animation:pulse .8s infinite;color:#ff647d;font-size:clamp(30px,6vw,66px)}
+@keyframes pulse{0%,100%{transform:scale(1)}15%{transform:scale(1.065)}30%{transform:scale(1)}45%{transform:scale(1.035)}}
+@media(prefers-reduced-motion:reduce){.pulse{animation:none}}
+#touch{position:absolute;bottom:4%;left:3%;right:3%;display:flex;justify-content:space-between;pointer-events:none;z-index:2}
+#touch button{pointer-events:auto;padding:12px 22px;font-size:clamp(11px,1.7vw,17px);background:#242b45d9;border:2px solid #ffffff35;min-height:52px}
+#jump{border-color:#baff53aa!important;color:#cfff8a}
+#touch button:active{transform:translateY(3px);background:#44536c}
+[hidden]{display:none!important}
+#rotate{position:fixed;bottom:12px;font-size:12px;color:#b8bfd8;display:none;text-align:center;pointer-events:none}
+@media(orientation:portrait){#rotate{display:block}.panel{padding:12px}#tools button{min-height:32px;min-width:32px;font-size:10px;padding:5px}#touch button{padding:7px 14px;min-height:38px}.start{padding:8px 20px;margin-top:5px}.chips{margin:6px 0}p{margin:6px 0}}
+</style>
 </head>
 <body>
-
-    <header>
-        <div class="app-title">
-            🛒 Lista Fácil
-        </div>
-        <div class="stats" id="statsCounter">0/0 itens</div>
-    </header>
-
-    <main>
-        <div class="input-card">
-            <form id="itemForm" onsubmit="addItem(event)">
-                <div class="input-group">
-                    <div class="input-row">
-                        <input type="text" id="itemName" placeholder="O que deseja comprar?" required autocomplete="off">
-                        <input type="number" id="itemQty" value="1" min="1" max="999" placeholder="Qtd">
-                    </div>
-                    <button type="submit" class="btn-primary">
-                        <span>Adicionar</span>
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <div class="actions-bar" id="actionsBar" style="display: none;">
-            <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">Sua Lista</span>
-            <button class="btn-text" onclick="clearCompleted()">Limpar comprados</button>
-        </div>
-
-        <div class="list-container" id="listContainer">
-            <!-- Os itens serão inseridos aqui via JS -->
-        </div>
-    </main>
-
-    <script>
-        let items = JSON.parse(localStorage.getItem('lista_facil_items')) || [];
-
-        function saveAndRender() {
-            localStorage.setItem('lista_facil_items', JSON.stringify(items));
-            render();
-        }
-
-        function addItem(e) {
-            e.preventDefault();
-            const nameInput = document.getElementById('itemName');
-            const qtyInput = document.getElementById('itemQty');
-            
-            const name = nameInput.value.trim();
-            const qty = parseInt(qtyInput.value) || 1;
-
-            if (!name) return;
-
-            const newItem = {
-                id: Date.now(),
-                name: name,
-                qty: qty,
-                purchased: false
-            };
-
-            items.unshift(newItem);
-            
-            nameInput.value = '';
-            qtyInput.value = '1';
-            nameInput.focus();
-
-            saveAndRender();
-        }
-
-        function toggleItem(id) {
-            items = items.map(item => {
-                if (item.id === id) {
-                    return { ...item, purchased: !item.purchased };
-                }
-                return item;
-            });
-            saveAndRender();
-        }
-
-        function deleteItem(id) {
-            items = items.filter(item => item.id !== id);
-            saveAndRender();
-        }
-
-        function clearCompleted() {
-            items = items.filter(item => !item.purchased);
-            saveAndRender();
-        }
-
-        function render() {
-            const container = document.getElementById('listContainer');
-            const statsCounter = document.getElementById('statsCounter');
-            const actionsBar = document.getElementById('actionsBar');
-
-            const total = items.length;
-            const purchasedCount = items.filter(i => i.purchased).length;
-
-            statsCounter.innerText = `${purchasedCount}/${total} comprados`;
-
-            if (total > 0) {
-                actionsBar.style.display = 'flex';
-            } else {
-                actionsBar.style.display = 'none';
-            }
-
-            if (total === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-                            <line x1="3" y1="6" x2="21" y2="6"></line>
-                            <path d="M16 10a4 4 0 0 1-8 0"></path>
-                        </svg>
-                        <p>Sua lista está vazia.<br>Adicione produtos acima para começar.</p>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = items.map(item => `
-                <div class="item-card ${item.purchased ? 'purchased' : ''}">
-                    <div class="item-info" onclick="toggleItem(${item.id})">
-                        <div class="checkbox"></div>
-                        <div class="item-text-content">
-                            <span class="item-name">${escapeHtml(item.name)}</span>
-                            <span class="item-qty">Quantidade: ${item.qty}</span>
-                        </div>
-                    </div>
-                    <button class="btn-delete" onclick="deleteItem(${item.id})" aria-label="Excluir">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-                        </svg>
-                    </button>
-                </div>
-            `).join('');
-        }
-
-        function escapeHtml(text) {
-            const map = {
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#039;'
-            };
-            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
-        }
-
-        // Renderização inicial
-        render();
-    </script>
+<main id="stage" aria-label="Jogo Fuga do Leg Day">
+  <canvas id="game" width="960" height="540" aria-label="Corredor 2D. Espaço pula e seta para baixo agacha."></canvas>
+  <div id="tools"><button id="sound" aria-label="Desativar som">SOM ON</button><button id="pause" aria-label="Pausar jogo">Ⅱ</button></div>
+  <div id="touch" hidden><button id="duck">↓ AGACHAR</button><button id="jump">PULAR ↑</button></div>
+  <div id="overlay" role="dialog" aria-modal="true" aria-label="Menu do jogo"><section class="panel" id="panel"></section></div>
+</main>
+<div id="rotate">↻ Gire o celular para jogar em paisagem</div>
+<script>
+'use strict';
+(() => {
+// Mundo em coordenadas fixas; o CSS adapta a imagem a qualquer tela.
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
+const overlay=document.getElementById('overlay'),panel=document.getElementById('panel');
+const touch=document.getElementById('touch'),pauseButton=document.getElementById('pause');
+const W=960,H=540,FLOOR=414,PLAYER_X=145,STORAGE='fuga-legday-record-v1';
+let mode='menu',time=0,meters=0,bonus=0,best=0,speed=260,spawn=1.9,powerSpawn=5;
+let objects=[],particles=[],doubleUntil=0,shieldUntil=0,duckUntil=0,duckHeld=false;
+let y=FLOOR,vy=0,jumps=0,last=0,visualTime=0,beatAt=0,toast='',toastUntil=0;
+const player={w:34,h:64};
+try{best=Number(localStorage.getItem(STORAGE))||0;}catch(e){/* Jogo também funciona sem armazenamento. */}
+let audio=null,muted=false;
+function unlockAudio(){
+  try{if(!audio)audio=new(window.AudioContext||window.webkitAudioContext)();
+  if(audio.state==='suspended')audio.resume().catch(()=>{});}catch(e){/* Áudio é opcional. */}
+}
+function beep(freq,duration=.1,volume=.06,delay=0,type='square'){
+  if(!audio||muted||audio.state!=='running')return;
+  const start=audio.currentTime+delay,osc=audio.createOscillator(),gain=audio.createGain();
+  osc.type=type;osc.frequency.setValueAtTime(freq,start);gain.gain.setValueAtTime(.0001,start);
+  gain.gain.exponentialRampToValueAtTime(volume,start+.008);
+  gain.gain.exponentialRampToValueAtTime(.0001,start+duration);
+  osc.connect(gain);gain.connect(audio.destination);osc.start(start);osc.stop(start+duration+.01);
+  osc.onended=()=>{osc.disconnect();gain.disconnect();};
+}
+function heartbeat(){beep(65,.13,.17,0,'sine');beep(48,.14,.13,.2,'sine');}
+function say(text){toast=text;toastUntil=time+2.2;}
+function score(){return Math.floor(meters)+bonus;}
+function remember(){best=Math.max(best,score());try{localStorage.setItem(STORAGE,String(best));}catch(e){}}
+function show(html){panel.innerHTML=html;overlay.hidden=false;touch.hidden=true;}
+function menu(){
+  show('<div class="eyebrow">Academia brasileira · modo sobrevivência</div><h1>FUGA DO<br><span>LEG DAY</span></h1><p>O personal chegou com o treino de perna.<br>Corra 500 metros antes que ele te pegue!</p><div class="chips"><span>↑ Pular obstáculos</span><span>↓ Agachar sob drones</span><span>500 m para escapar</span></div><button class="start" id="start">BORA FUGIR →</button><p>Espaço / toque: pular · ↓ / deslize para baixo: agachar<br>Tênis: pulo duplo por 10s · Água: proteção por 3s</p>');
+  document.getElementById('start').onclick=startGame;
+}
+function startGame(){
+  unlockAudio();mode='playing';time=0;meters=0;bonus=0;speed=260;spawn=1.9;powerSpawn=4;
+  objects=[];particles=[];doubleUntil=0;shieldUntil=0;duckUntil=0;duckHeld=false;
+  y=FLOOR;vy=0;jumps=0;toast='Ninguém solta a mão do whey!';toastUntil=2.5;
+  overlay.hidden=true;touch.hidden=false;pauseButton.textContent='Ⅱ';beep(420,.12);
+}
+function finish(win){
+  if(mode!=='playing')return;
+  mode=win?'won':'lost';duckHeld=false;remember();beatAt=visualTime;
+  show('<div class="eyebrow">'+(win?'Você escapou do personal!':'O personal te alcançou!')+'</div><h1 class="pulse">E O CARDIO?</h1><p>'+(win?'Pulou o leg day. O cardio veio de brinde.':'Hoje não teve perna. Nem fôlego.')+'</p><div class="chips"><span>'+Math.floor(meters)+' / 500 m</span><span>'+score()+' pontos</span><span>Recorde: '+best+' pts</span></div><button class="start" id="retry">MAIS UMA SÉRIE →</button>');
+  document.getElementById('retry').onclick=startGame;heartbeat();
+}
+function pauseGame(){
+  if(mode==='playing'){
+    mode='paused';duckHeld=false;show('<div class="eyebrow">Intervalo entre séries</div><h1>RESPIRA.</h1><p>O personal pode esperar um pouquinho.</p><button class="start" id="resume">CONTINUAR →</button>');
+    document.getElementById('resume').onclick=resume;pauseButton.textContent='▶';
+  }else if(mode==='paused')resume();
+}
+function resume(){unlockAudio();mode='playing';overlay.hidden=true;touch.hidden=false;pauseButton.textContent='Ⅱ';}
+function crouching(){return y>=FLOOR-.1&&(duckHeld||time<duckUntil);}
+function jump(){
+  unlockAudio();if(mode!=='playing')return;
+  const onGround=y>=FLOOR-.1;
+  if(onGround||(time<doubleUntil&&jumps<2)){
+    duckUntil=0;duckHeld=false;vy=-690;jumps=onGround?1:jumps+1;beep(jumps===2?660:440,.11);
+    burst(PLAYER_X+16,y-8,'#baff53',7);
+  }
+}
+function duck(){if(mode!=='playing')return;duckUntil=time+.8;if(y<FLOOR)vy=Math.max(vy,600);}
+function burst(x,py,color,count=15){for(let i=0;i<count;i++)particles.push({x,y:py,vx:(Math.random()-.5)*180,vy:-Math.random()*180,life:.5,color});}
+function rect(x,py,w,h,color){ctx.fillStyle=color;ctx.fillRect(Math.round(x),Math.round(py),w,h);}
+function text(str,x,py,size=16,color='#fff',align='left'){
+  ctx.fillStyle=color;ctx.font='800 '+size+'px system-ui,Arial';ctx.textAlign=align;ctx.fillText(str,x,py);ctx.textAlign='left';
+}
+// Sprites originais desenhados com retângulos e caminhos, sem imagens.
+function dumbbell(x,py){rect(x+5,py+12,44,8,'#bbc6dc');rect(x,py+2,12,30,'#64718e');rect(x+42,py+2,12,30,'#64718e');rect(x+3,py+5,4,22,'#d6ddef');rect(x+46,py+5,4,22,'#d6ddef');}
+function sprite(o){
+  const x=o.x,py=o.y;
+  if(o.kind==='haltere')dumbbell(x,py);
+  if(o.kind==='banco'){
+    rect(x,py+1,76,14,'#ff647d');rect(x+6,py+15,7,30,'#b6c3d7');rect(x+62,py+15,7,30,'#b6c3d7');rect(x+8,py+5,59,3,'#ffadba');
+  }
+  if(o.kind==='whey'){
+    rect(x+2,py,40,8,'#dce5f2');rect(x,py+8,44,40,'#ab73ef');rect(x+4,py+16,36,20,'#231b3b');text('WHEY',x+22,py+30,10,'#fff','center');
+  }
+  if(o.kind==='sofa'){
+    rect(x+7,py,64,24,'#ec9f57');rect(x,py+15,80,28,'#bb6f3d');rect(x+12,py+22,56,16,'#f0ae6b');rect(x+7,py+43,8,5,'#614530');rect(x+64,py+43,8,5,'#614530');
+  }
+  if(o.kind==='drone'){
+    rect(x+10,py+14,50,12,'#b8c6de');rect(x,py+3,23,5,'#d5eaff');rect(x+48,py+3,23,5,'#d5eaff');
+    rect(x+11,py+7,5,13,'#7187ad');rect(x+52,py+7,5,13,'#7187ad');rect(x+27,py+25,5,7,'#b8c6de');
+    rect(x+17,py+32,40,12,'#eb9c44');rect(x+21,py+34,32,5,'#ffe19a');rect(x+29,py+34,5,5,'#e94b58');
+    rect(x+4,py+(Math.sin(visualTime*45)>0?0:6),16,2,'#baff53');rect(x+50,py+1,16,2,'#baff53');
+  }
+  if(o.kind==='tenis'){
+    rect(x,py+16,38,12,'#baff53');rect(x+4,py+4,16,17,'#8fc43d');rect(x,py+28,40,5,'#f4ffe2');rect(x+12,py+14,15,4,'#fff');
+  }
+  if(o.kind==='agua'){
+    rect(x+9,py,14,6,'#baff53');rect(x+6,py+6,20,32,'#62d6ef');rect(x+10,py+10,4,23,'#cef7ff');rect(x+6,py+18,20,9,'#effbff');
+  }
+}
+function newObstacle(){
+  const kinds=['haltere','banco','whey','sofa','drone'];
+  const kind=kinds[Math.floor(Math.random()*kinds.length)];
+  const sizes={haltere:[54,34],banco:[76,45],whey:[44,48],sofa:[80,48],drone:[72,44]};
+  const [w,h]=sizes[kind];objects.push({kind,x:W+35,y:kind==='drone'?FLOOR-98:FLOOR-h,w,h,power:false});
+}
+function newPower(){
+  const kind=Math.random()<.5?'tenis':'agua';
+  // Aparece entre obstáculos; altura permite pegar correndo ou pulando.
+  objects.push({kind,x:W+35,y:FLOOR-104,w:40,h:38,power:true});
+}
+function overlaps(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;}
+function update(dt){
+  time+=dt;const level=Math.floor(time/15),oldSpeed=speed;speed=Math.min(260+level*45,575);
+  if(speed!==oldSpeed){say('Mais carga! Velocidade subiu.');beep(220,.15);}
+  meters=Math.min(500,meters+speed*dt/25);
+  vy+=1900*dt;y+=vy*dt;
+  if(y>=FLOOR){y=FLOOR;vy=0;jumps=0;}
+  spawn-=dt;powerSpawn-=dt;
+  if(spawn<=0){newObstacle();spawn=1.45+Math.random()*.55;}
+  if(powerSpawn<=0){
+    // Não sobrepor power-up e obstáculo na mesma faixa horizontal.
+    if(objects.every(o=>o.x<W-135)){newPower();powerSpawn=6+Math.random()*3;spawn=Math.max(spawn,.75);}
+    else powerSpawn=.25;
+  }
+  const h=crouching()?29:64;
+  const hit={x:PLAYER_X+5,y:y-h+4,w:24,h:h-7};
+  for(const o of objects){
+    o.x-=speed*dt;
+    if(o.gone)continue;
+    const obstacleHit={x:o.x+4,y:o.y+3,w:o.w-8,h:o.h-6};
+    if(!overlaps(hit,obstacleHit))continue;
+    if(o.power){
+      o.gone=true;bonus+=50;
+      if(o.kind==='tenis'){doubleUntil=time+10;say('Tênis turbo! Pulo duplo por 10s.');}
+      else{shieldUntil=time+3;say('Hidratado e blindado por 3s!');}
+      burst(o.x,o.y,'#baff53');beep(700,.12);beep(1000,.16,.06,.1);
+    }else if(time<shieldUntil){o.gone=true;burst(o.x,o.y,'#62d6ef');beep(180,.1);}
+    else{burst(PLAYER_X,y-30,'#ff647d');finish(false);return;}
+  }
+  objects=objects.filter(o=>o.x+o.w>-30&&!o.gone);
+  for(const p of particles){p.life-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=400*dt;}
+  particles=particles.filter(p=>p.life>0);
+  if(meters>=500)finish(true);
+}
+function draw(){
+  ctx.clearRect(0,0,W,H);rect(0,0,W,H,'#171b2f');
+  // Parallax da academia, iluminada por letreiros e janelas.
+  const scroll=meters*25;
+  for(let i=0;i<7;i++){
+    const x=i*190-(scroll*.22%190);
+    rect(x,132,148,153,'#20273e');rect(x+8,140,132,137,'#29334c');
+    rect(x+72,140,5,137,'#171b2f');rect(x+8,210,132,5,'#171b2f');
+    rect(x+18,154,43,8,'#34435c');
+  }
+  rect(0,285,W,129,'#20263b');rect(0,285,W,5,'#3b455d');
+  for(let i=0;i<6;i++){
+    const x=i*230-(scroll*.5%230);
+    rect(x+15,315,7,89,'#4d5c77');rect(x+101,315,7,89,'#4d5c77');
+    rect(x+15,321,93,5,'#7b8ba6');dumbbell(x+34,335);rect(x+23,397,91,7,'#3a4961');
+  }
+  rect(0,FLOOR,W,126,'#111624');rect(0,FLOOR,W,5,'#baff53');
+  for(let i=0;i<18;i++)rect(i*80-(scroll%80),FLOOR+6,2,120,'#263049');
+  rect(0,479,W,2,'#263049');text('SEM DOR, SEM… OPA, FUI!',W/2,307,12,'#67738f','center');
+  for(const o of objects)if(!o.gone){
+    if(o.power){ctx.globalAlpha=.16;ctx.fillStyle='#baff53';ctx.beginPath();ctx.arc(o.x+20,o.y+20,29+Math.sin(visualTime*4)*3,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;}
+    sprite(o);
+  }
+  const crouch=crouching(),h=crouch?29:64;
+  const running=mode==='playing'&&y===FLOOR;
+  const step=running?Math.sin(time*19)*8:0;
+  if(time<shieldUntil&&mode==='playing'){
+    ctx.strokeStyle='#62d6ef';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(PLAYER_X+17,y-h/2,30,h/2+13,0,0,Math.PI*2);ctx.stroke();
+  }
+  // Pernas, camiseta, cabeça e faixa do corredor.
+  rect(PLAYER_X+2,y-19,11,19+Math.min(0,step),'#ab73ef');rect(PLAYER_X+22,y-19,11,19-Math.max(0,step),'#ab73ef');
+  rect(PLAYER_X-2,y-5+Math.min(0,step),18,6,'#baff53');rect(PLAYER_X+22,y-5-Math.max(0,step),18,6,'#baff53');
+  rect(PLAYER_X,y-h+23,35,Math.max(12,h-40),'#baff53');
+  rect(PLAYER_X+7,y-h,25,23,'#edb28c');rect(PLAYER_X+5,y-h-3,26,8,'#29212f');
+  rect(PLAYER_X+6,y-h+4,26,5,'#ff647d');rect(PLAYER_X+26,y-h+11,4,4,'#171b2f');
+  if(!crouch){rect(PLAYER_X+29,y-39+step/3,10,18,'#edb28c');text('01',PLAYER_X+17,y-27,10,'#253516','center');}
+  for(const p of particles){ctx.globalAlpha=Math.max(0,p.life*2);rect(p.x,p.y,4,4,p.color);}ctx.globalAlpha=1;
+  // HUD sempre em coordenadas do canvas, sem cortar em telas pequenas.
+  rect(22,18,500,83,'#111624');text('FUGA DO LEG DAY',38,40,13,'#baff53');
+  text(Math.floor(meters)+' m',38,76,30);text((speed/25*3.6).toFixed(1)+' km/h',205,75,20,'#c1cae2');
+  text('RECORDE '+best+' pts',355,56,13,'#c1cae2');text('PONTOS '+score(),355,78,13,'#baff53');
+  rect(22,108,500,6,'#303b53');rect(22,108,500*meters/500,6,'#baff53');text('META 500 m',532,115,11,'#8c9ab7');
+  if(mode==='playing'){
+    let row=145;
+    if(time<doubleUntil){text('TÊNIS: PULO DUPLO  '+Math.ceil(doubleUntil-time)+'s',25,row,14,'#baff53');row+=25;}
+    if(time<shieldUntil)text('ÁGUA: INVENCÍVEL  '+Math.ceil(shieldUntil-time)+'s',25,row,14,'#62d6ef');
+    if(time<toastUntil){rect(250,193,460,36,'#111624');text(toast,480,217,15,'#e5ebfb','center');}
+  }
+}
+function frame(stamp){
+  // Passos pequenos impedem atravessar obstáculos em telas com FPS baixo.
+  const dt=last?Math.min((stamp-last)/1000,.1):0;last=stamp;visualTime+=dt;
+  if(mode==='playing'){
+    let remaining=dt;while(remaining>0&&mode==='playing'){const step=Math.min(remaining,1/120);update(step);remaining-=step;}
+  }
+  if((mode==='won'||mode==='lost')&&!document.hidden&&visualTime-beatAt>=.85){heartbeat();beatAt=visualTime;}
+  draw();requestAnimationFrame(frame);
+}
+// Teclado: evita rolagem e repetição automática do pulo.
+window.addEventListener('keydown',e=>{
+  if(['Space','ArrowUp','ArrowDown'].includes(e.code))e.preventDefault();
+  if(e.target instanceof HTMLButtonElement)return;
+  if((e.code==='Space'||e.code==='ArrowUp')&&!e.repeat)jump();
+  if(e.code==='ArrowDown'){duckHeld=true;duck();}
+  if(e.code==='KeyP'&&!e.repeat)pauseGame();
+});
+window.addEventListener('keyup',e=>{if(e.code==='ArrowDown')duckHeld=false;});
+document.getElementById('jump').addEventListener('pointerdown',e=>{e.preventDefault();jump();});
+const duckButton=document.getElementById('duck');
+duckButton.addEventListener('pointerdown',e=>{e.preventDefault();duckHeld=true;duck();duckButton.setPointerCapture(e.pointerId);});
+for(const event of ['pointerup','pointercancel','lostpointercapture'])duckButton.addEventListener(event,()=>{duckHeld=false;});
+// Toque no cenário pula ao soltar; um swipe para baixo agacha sem pular.
+let gesture=null;
+canvas.addEventListener('pointerdown',e=>{
+  if(mode!=='playing')return;e.preventDefault();unlockAudio();
+  if(e.pointerType==='mouse'){jump();return;}
+  gesture={id:e.pointerId,x:e.clientX,y:e.clientY,swiped:false};canvas.setPointerCapture(e.pointerId);
+});
+canvas.addEventListener('pointermove',e=>{
+  if(!gesture||gesture.id!==e.pointerId)return;
+  if(e.clientY-gesture.y>25&&!gesture.swiped){gesture.swiped=true;duck();}
+});
+canvas.addEventListener('pointerup',e=>{if(gesture&&gesture.id===e.pointerId){if(!gesture.swiped)jump();gesture=null;}});
+canvas.addEventListener('pointercancel',()=>{gesture=null;});
+pauseButton.onclick=pauseGame;
+document.getElementById('sound').onclick=()=>{
+  unlockAudio();muted=!muted;document.getElementById('sound').textContent=muted?'SOM OFF':'SOM ON';
+  document.getElementById('sound').setAttribute('aria-label',muted?'Ativar som':'Desativar som');
+};
+document.addEventListener('visibilitychange',()=>{if(document.hidden){if(mode==='playing')pauseGame();if(audio)audio.suspend().catch(()=>{});}last=0;});
+window.addEventListener('blur',()=>{duckHeld=false;if(mode==='playing')pauseGame();});
+menu();requestAnimationFrame(frame);
+})();
+</script>
 </body>
 </html>
-```

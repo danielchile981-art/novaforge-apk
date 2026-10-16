@@ -1,18 +1,17 @@
 {
-  "name": "novaforge-apk",
+  "name": "fuga-do-leg-day",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "private": true,
+  "description": "Endless runner brasileiro de academia, offline e sem dependências web",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "sync": "cap sync android",
+    "android": "cap open android"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
-    "@capacitor/android": "^8.5.1",
-    "@capacitor/cli": "^8.5.1",
-    "@capacitor/core": "^8.5.1"
+    "@capacitor/android": "7.4.3",
+    "@capacitor/core": "7.4.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "7.4.3"
   }
 }
